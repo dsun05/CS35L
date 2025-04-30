@@ -348,7 +348,7 @@ Characteristics of QUIC:
 - Lowercase convention (vs SGML's uppercase)
 
 Elements:
-- Tags: <p>, <a href>, <h1>, <img src>, etc.
+- Tags: \<p>, \<a href>, \<h1>, \<img src>, etc.
 - DOM structure: Tree of nested elements
 
 HTML Example:
