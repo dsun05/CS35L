@@ -1,0 +1,50 @@
+2.1
+(*
+ (expt 2 (- 607 1))
+ (- (expt 2 607) 1)
+)
+
+log(N) = log( 2^606 * (2^607-1))
+= log(2^606) + log(2^607 -1)
+= 606 + log(2^607 -1)
+= 1213
+
+In EMACS: (+ (log (- (expt 2 607) 1) 2 ) 606)
+
+C-h b results:
+C-h k = describe-key
+M-SPC = cycle-spacing
+
+When typing C-h k C-h k, emacs opens the basic description of "C-h k" because "C-h k" is a "describe-key" command being pointed at itself, so it will describe its own function. 
+When typing C-h M-SPC, emacs opens documentation for M-SPC, which cycles spacing as described in C-h b. 
+
+The more general function is just-one-space, which removes all spaces preceding the cursor except for 1. In M-SPC, if you press M-SPC again, it removes that last space as well. Repeatedly typing M-SPC will loop through this process from the beginning. 
+
+Homework: Python Scripting
+My shuf.py script runs as expected in both python 2 and python 3. My script does not utilize any new, python3 exclusive features. 
+
+Benchmarks:
+Normal shuf:
+user: 0m0.064s
+sys: 0m0.016s
+
+My shuf (pre 3.11 (/usr/bin/python))
+user: 0m0.642s
+sys: 0m0.048s
+
+My shuf (3.11+ (/usr/local/cs/bin/python))
+user: 0m0.575s
+sys: 0m0.041s
+
+My shuf.py script works on both versions of python (3.13.1 and 3.9.21). 
+
+CPU:
+Architecture: x86_64
+Model Name: Intel(R) Xeon(R) Silver 4116 CPU @ 2.10GHz
+CPUs: 4
+Threads per core: 1
+
+Operating System
+Name: Red Hat Enterprise Linux
+Version: 9.5 (Plow)
+ID: "rhell"

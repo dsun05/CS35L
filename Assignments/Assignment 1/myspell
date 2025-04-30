@@ -1,0 +1,6 @@
+#!/bin/bash
+
+tr -s '[ <>]' '\n' | tr '[:upper:]' '[:lower:]' | sort -u> input
+tr -s '[ <>]' '\n' <'/usr/share/dict/linux.words' | tr '[:upper:]' '[:lower:]' | sort -u > dict
+
+comm -23 input dict

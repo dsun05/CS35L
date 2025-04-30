@@ -1,0 +1,18 @@
+1. /usr/bin/sh
+2. /usr/local/cs/bin/sleep
+3. /usr/bin/type
+4. sed, seq
+5. sed is a stream editor for filtering and transforming text. seq prints a sequence of numbers. 
+6. /usr/local/cs/emacs-30.1/bin/emacs-30.1
+7. 11.5.0
+8. 14.2.0
+9. Because the plain 'gcc' program actually executes /usr/local/cs/bin/gcc
+10. It means any user who executes the program will temporarily run it with the permissions of the owner (who has exec permissions), and users who are not the owner or in the file's group will not be able to write to the file.
+11. /usr/local/cs,/usr/local/cs/autoconf-2.72,/usr/local/cs/autoconf-2.72/bin,/usr/local/cs/autoconf-2.72/share,/usr/local/cs/autoconf-2.72/share/autoconf
+12. 5813
+13. 426
+14. liba52.so.0
+15. transpose-chars,transpose-lines,transpose-paragraphs,transpose-regions,transpose-sentences,transpose-words
+16. The yank function pastes the most recently killed (cut or copied) text into the current buffer at the cursor position. You can yank multiple times to insert earlier killed text from the kill ring, using M-y.
+17. C-y
+18. ps -HU $(whoami)

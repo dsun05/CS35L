@@ -1,0 +1,32 @@
+First, I created a local directory on my system for assign3. I git cloned the repo into this directy as instructed, running ./helper innit to set up my environment. 
+I opened the /src folder in my VSCode and ran ./helper dev, opening the local address in my VSCode simple browser (so I could see live changes while coding)
+
+I first changed my Square function to display a 3x3 grid of buttons by enclosing button elements within 3 divs, which were contained within a fragment. 
+Then, I changed the value of these buttons to numbers, to help visualize them in sequence. My page now displayed a 3x3 grid numbered 1-9. I renamed this Square function to Board.
+
+Then, I created a new Square function, which I thought of as an object. This square function took a {value} and returned a button element with {value} as its displayed text. 
+I changed all my button calls in my Board to call Square instead, and passed along value={index} where {index} was each button's position, labled 1-9. This resulted in the same output as before. 
+
+Then, I created a click handler. This was a subfunction of Square, which made it so that when clicked, each button would log to the console that it had been clicked. I added this functionality to the buttons by specifying their "onClick" attribute as this handleClick function. I tested this in my browser and saw the appropiate console logs. 
+
+Then, I imported the useState library and used it to set the default value of each button to "null" and defined a function setValue to change this value. I removed the {value} argument for square, as I am now setting it by default using usestate, and set the click handler to setValue('X') when clicked. I observed that now, all my buttons defaulted to being "empty" squares, and when clicked, would display the text "X" 
+
+Now, I lifted the games state from Square to Board. In my deault Board function, I use useState to declare a variable {squares} which is an array of size 9, by default filled with nulls. Each element in this array corresponds to one of the squares of the board, such that squares[index] has [index] = 0-9. 
+
+I changed my return function in Board, setting the "value" of the Square elements to their respective elements in the squares array, e.g.; value={squares[i]} s.t. i=0-9. Now, I return to the Square function and delete everything, as I have moved the value initialization to Board, and will soon move the click handler to board as well. Square now only accepts an argument {value} and contains just a return statement returning a button element with classname "square" and displaytext {value}. I refresh my web browser and observe that now, my page contains an empty 3x3 grid. When I click anywhere, nothing happens. 
+
+I add an onSquareClick argument to the Square function, and set its returned button element's onClick attribute to {onSquareClick"}. In my Board function, I pass the argument onSquareClick={handleClick} for all 9 Square objects. Then, I create the function handleClick() within Board().
+
+My handleClick function creates a copy of the squares array by using splice() and sets that equal to nextSquares. To test this function, I set it so that any click event will set the 0th element in nextSquares to "X", and then set my squares array equal to nextSquares. I observe that now, when I click on any square, the top left square becomes an X. 
+
+Now that I know the basic code of this function works, I let it properly set the square clicked. I do this by adding an argument "i" to handleClick, and make handleClick set the ith element of nextSquares to "X". When I test this in my browser, I get an infite loop error. To fix this, I set the onSquareClick argument in all of my Square elements in Board to {() => handleClick(i)} where i=their index in the array. This works because now, after the square is clicked the code after the arrow will run. Now, when I test this in my browser, I observe that the square I click becomes an "X" for all squares. 
+
+I create a new state to the Board component called "xIsNext", which is a boolean with default state true. This is to keep track of who's turn it is. Every time a square is clicked, I check if xIsNext. If true, then the square clicked becomes an X. If not, then it comes an O. After, I flip the state of xIsNext by doing setXIsNext(!xIsNext). Now, when I click on the squares in my browser, they alternate between X and O fills with each click. However, there are no checks to see if a square is already clicked, meaning clicks are overridden with ease. 
+
+To fix this, I add a check before anything else in handleClick. If the ith element of squares array is not null, we return from the function and don't change anything. Now, we can only click a square and change its value if it is empty. 
+
+To determine a winner, I create a new function calculateWinner, with an argument squares. To find the winner, I check every possible combination of winning indeces (horizontal, vertical, and diagonal) and check if those combinations of indices are the same value (X or O but NOT null) in squares. If it is, return whichever X or O those indices contain. If not, return null. 
+
+I add a check alongside the null-square check in the beginning of handleClick which checks if someone has already won the game. If calculateWinner(square) is not null (someone won) we return and prevent any more moves. 
+
+To display the winner and next player, I add a new text string "status" before my return statement in Board. This status will contain "Next player: " with whoever the next player is (X or Y), and if someone has won, will instead display "Winner: " with whoever the winner is. When I test this in my browser, I observe that I have completed the game tic-tac-toe. 

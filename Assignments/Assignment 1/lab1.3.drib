@@ -1,0 +1,18 @@
+%Assignment 1
+Assignment 27
+  
+<%UTF-8
+US-ASCII
+ 
+<xreplace string
+8
+2019
+
+8
+0027
+
+<[^[:ascii:]]
+xwhat cursor position
+<xflush lines
+[^[:ascii:]]
+

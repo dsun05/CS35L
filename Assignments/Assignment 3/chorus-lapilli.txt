@@ -1,0 +1,29 @@
+I am basing my program off the tic-tac-toe I built before. I'm starting with the final product of tic-tac-toe as described in my log. 
+
+First, I add a new state to Board called "move" with default value 1, which keeps track of the move number. This is important because move number now matters for how we handle clicks. Next, I create another new state called firstClick, with default value null. Then, I completely erase my handleClick function and start from scratch. 
+
+As before, we pass an argument i to handleClick and create the spliced squares array nextSquares. For simplicity, we also create a new variable "char" with is "X" if xIsNext is true, and "O" if xIsNext is false. 
+
+We can no longer simply check if a square is non-null and return if it is not, as for moves past move 6, we have to click a non-null square first. So, we remove that check for squares[i] === null and instead just check if a winner has been declared. 
+
+To handle move logic, we split the logic into two cases:
+1. The move number > 6 (each side has 3 squares on the board)
+2. The move number < 6 
+
+In case 2, we check if the selected square is null. If not, we return early as before. If the selected square is null, we set that square to char and update the board, flip xIsNext, and increment move by 1. 
+
+In case 2, there are two subcases:
+1. If the click is the first click
+  a: If char === the selected square (checking if the player is selecting a square they currently occupy), then we set "firstClick" to the index i. Otherwise, we return early. 
+2. If the click is the second click
+  a: We first check if the selected square is null. If not, we return early and reset firstClick as we cannot move to an already occupied square. Then, we must check if the move is adjacent or diagonal to the original square. To do this, we compute the Chebyshev distance (the greatest difference between two coordinates) between the two squares. We know the grid is 3x3, so if this number is <= 1 for both the row and column, it is adjacent or diagonal. If it is not, we return early and reset firstClick to null. 
+  b: We set a temporary variable "middle" to nextSquares[4], which will hold the value of the middle square before the turn. Then, we set the square of the firstClick index to null (to empty it) and the ith index to char (moving to the new, unoccupied square). 
+Now, there are two more subcases:
+1. The current player (X or O) occupied the middle before the turn.
+2. They did not occupy the middle.
+
+In case 2, we simply set firstClick to null (to reset the value), flip xIsNext, increment move, and update the board. 
+
+In case 1, we check if with the current move, the player has won. If not, we then check if they have vacated the middle square (nextSquares[4]). If they have neither won the game or vacated the middle square with their input move, we reset the board to what it was before they're move (the user will never see the new, invalid move), set first click to null (to reset the value), and return early. 
+
+Nothing else is changed from tic-tac-toe. We have now implemented Chorus-Lapilli.
