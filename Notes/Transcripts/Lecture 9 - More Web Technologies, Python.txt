@@ -1,0 +1,320 @@
+So we were talking about HTML.
+
+And I want to, at least I hope, finish talking about HTML and everything sort of web-ish, etc.
+
+And if we have time at the end, I'd like to go back and do a little bit of Python, because we got cut off abruptly when we switched to assignment 3 and I still have a few more things to say about Python. We'll see how well that works. All right, so we were talking about the origins of HTML and if you'll recall the idea came from an earlier language called SGML and the essential idea of SGML, well one thing was to be portable amongst lots of different publishers and all that sort of thing. But another idea was to separate sort of form from content, right? The idea is we wanted to sort of have our markup language say what the book is about, right? That's the content, right? This is sort of the more important stuff.
+
+from the form or the presentation or the appearance of the content which could be sort of publisher dependent. And this distinction between the two is an important part of HTML as well. Ideally, the goal is we have the same page that will work both on a laptop or a or other kinds of devices. So we want to have something that's sort of declarative, not sort of imperative. That is, we want to have a sort of a markup language that says what we want to display and the form that it's going to display, but we don't want to have a program.
+
+And to some extent in web applications that distinction is still there. That is the stuff you stick in HTML tends to be the declaration of what you want. And then when you can't do it in HTML you fall back on JavaScript. Because JavaScript right is the program part.
+
+The line between these two things is not always sharp. When you're building an application, sometimes you have the choice. Shall I do it in HTML or shall I do it with CSS and some other HTML things we'll talk about later or should I do it in JavaScript? And the original design goal was to say when in doubt, do it in HTML. The idea being that if you give the the browser, sort of the freedom to render things the way that's good for the user, that means less work for you when you're writing the JavaScript code. At least that was the original goal. I think we'll see we didn't always actually achieve that goal. All right, so that's sort of a background. Now we can start talking about some of the details. First off, let's talk about HTML syntax. You've seen it before.
+
+to some extent at best what I'll be doing here is giving you sort of terminology for a standard sort of thing. First thing is what's an HTML element? An HTML element in the syntax. Oh, that's a bad element. In some sense it represents part of a tree.
+
+and at the bottom you'll see text and images and that sort of thing. But the internal structure of your document is going to be a tree. And an HDL element corresponds to a node in the tree. And this correspondence is more than just, you know, you're drawing a diagram in your head and that sort of thing. No. Typically, browsers will keep a tree data structure in RAM when they're looking at their particular web page. And part of your JavaScript code is going to be sort of looking at this tree. So it's important to know what sort of nodes are possible. And in the syntax, this is surrounded by tags.
+
+So you can tell that you're looking at an element if you see tags around it. And a tag has a syntax that looks like this. And here's the contents. And this element might stand, I don't know, for this node in your tree. The contents in between the tags will represent everything underneath the tree, underneath that node, and then the tag itself represents the node. And there should be sort of a one-to-one correspondence in your mind and also in your software between elements and nodes in the tree. Now it isn't always this simple, right? Here's the opening tag, here's the closing tag. To some extent this is a big opening parenthesis in your data, in your document. This is a big The parentheses have to match like they would in sort of any other system. You shouldn't have something that looks like this. Because there's no way to say, oh, that stands for a tree and its subtrees. The tags aren't represented, they aren't nested properly. Okay. However, there are Here are some simplifications that you can do here. You don't always have to say it exactly this way. First off, you can omit closing tags if there's no ambiguity that results. So if you feed something that looks like this to a browser, what's going to happen? It's going to look at all this stuff and say, oh, we're starting off an A node. All right. Oh, underneath that, there's a B node. Okay. Underneath that B node, there's a whole bunch of stuff. That's the dot, dot, dot. Oh, and here we got to the end of the A node. Okay, that means I'm here. I've gotten to here. This, what most browsers will say, it's a mistake. I'll ignore it. It's as if it's not there. All right? So what's happened here is we've We've done our best to render whatever junk came in over the net. And it will act as if you'd flop these around. Flopping them around would have been correct. This is incorrect, but it works either way. So in that sense, typical applications and browsers and that sort of thing are much more generous about parsing HTML than a typical C++ program, you know, software development system is. If you forget a semicolon in your C++ program, the compiler will yell at you and refuse to run. If you forget a closing bracket or have the closing brackets in the wrong order in HTML, something will happen. Now, can you see any problems with this? Or another way of putting it, can you see why the developers of HTML run this way, whereas C++ compilers run the other way. Why are we being so generous here in our syntax? Any thoughts? Yes? Yeah, that's part of it. At least, certainly when the web started, it's just a web page. It doesn't really matter. Who cares, right? Yes?
+
+Yeah, part of it is that if there's something wrong with the HTML, most users kind of want to see as much as they can, right? That is, they want to see the first part of the webpage even if the second part has a typo in it. And that desire is so strong, they're willing to put up with syntax errors in the HTML as long as the browser kind of does something reasonable. So part of it is low stakes, and part of it is it's a different environment where people want as much as they can get out of the system. All right, so you can omit closing tags. One other thing is that you can also have a single tag stand for open and close. All right, so here this means open, this means close, and this is equivalent to saying, well, we'll have an open and we'll immediately have a close. It's shorthand syntax for that. This would, you know, correspond to an element that, you know, doesn't have anything in it, right? These are called sort of void elements. And if C here is a void element, that means it doesn't have any subtrees.
+
+There's nothing underneath it. These elements are sometimes useful to denote things that don't have any sort of subsidiary properties. They may have properties themselves, but we don't want the tree to keep growing underneath it. A classic example of a void element would be, I don't know, BR. So you can write it this way. That's short for just put a line across this part of the web page and then we'll keep going. There's nothing sort of inside the line or underneath the line or anything like that. It's just another sort of element in our web page. All right. Another thing that's important about elements is elements have attributes.
+
+identified by their tag, they also have sort of extra information associated with them. And you can think of the attribute set as sort of a mapping from names to values where the names and values are strings, right? A mapping from attribute names.
+
+Names to values. So for example, this element here might have an attribute named, I don't know, width. Let's do that now. And the value might be, I don't know, a thousand. And the name and the value will both be strings in sort of HTML. It's fairly common for the values to be interpreted as numbers.
+
+but they don't have to be. They could be arbitrary strings. Okay? And you can put as many names and values as you like on a particular node. We could have a height attribute, all that sort of thing. But of course each name has to be distinct. You can't have two attributes at the same node with the same name. There's only going to be one with attribute. The way you write down the attribute is at the same So after the tag you say something like this. Typically you don't need to put the quotes around these things. You can leave off the quotes. The rules for leaving that off are sometimes complicated but as long as you follow the rules of most sort of web pages You can put these attributes on the opening tag, but not the closing. The attributes belong here, you can have a void element, or they belong here, but don't put them over here. The idea is that when the browser is parsing the element, it wants to know the element's attributes as soon as possible. It doesn't want to find out at the very end of the parse, this element might have gone on for you know hundreds of kilobytes or something finally what the attributes are it wants to know early so that it can figure out how to render it properly or figure out what to do about that particular element even if it doesn't have the whole element in its memory yet. All right so some attributes are not void and we have sort of kinds of elements right.
+
+So raw text elements contain only text. So if you think of a raw, if B is a raw text element, in effect everything underneath B simply has to be a piece of text. You can't put other elements underneath it.
+
+These elements are relatively rare, but basically they're saying, "I can have text underneath me, but I can't further nest other elements." Normal elements can have a mixture of text and other elements. So they nest.
+
+in the usual subtree way. How do you know whether an element, a particular kind of element is a raw text element or a normal element? And I guess we also had void elements. Let's write that down. Have nothing. You look in your catalog of elements and that catalog will tell you for each element whether it's raw text, whether it's normal, or whether it's void.
+
+So to some extent you'll have to know in your mind or by looking at the catalog that say the BR is in this category and P which is short for paragraph is normal and a raw text might be, I don't know, PRE or something like that.
+
+Well, no, that's not a raw text. This one is pretty rare. I'd have to go look up them. All right? So the idea here is that you sort of look at the documentation, your list of elements, and then the issue will be, all right, you know, where can this list be found? Originally, when HTML came out, there was an attempt to standardize by saying we're going to have the list of elements that pretty much every browser needs to support and we will sort of, you know, call that our version 1.list and all that sort of thing. So there was a version of HTML called HTML1 or HTML1.1, etc. And the idea here is that each of these standards was sort of written down, okay, by what's called a DTD, which is short for a document type declaration. The idea being that at the start of your HTML document, you'd say, oh, this document conforms to HTML 1.4 and all that sort of thing. There would be a worldwide standard for that.
+
+And this document type declaration defines the allowed elements. And for each element, it specifies, first off, is it raw text or normal or void, right?
+
+Second, it lists the allowed attributes for that element and what they mean. So it would say, oh, well, if you have the BR element, then it can have a width attribute and that tells you how wide the bar is across the screen and that sort of thing. And it could also list, it specifies, Which sort of sub-elements are allowed? So it might say, for example, for the paragraph element, you can put a table inside a paragraph, but you can't put a section inside a paragraph or a chapter inside a paragraph. That sort of subsidiary relationship is not allowed. So one way of thinking about the DTD is that what it really does is it says what kind of trees you can have.
+
+And this approach was taken for HTML versions 1 up through 4.
+
+So a committee would meet and they would decide, oh, we have some new things we want to put into HTML or these things didn't work out, let's take them out and all that sort of thing.
+
+Unfortunately, this process didn't work very well in the long run. The problem with this approach is that the world moved too quickly. Browsers evolve faster than the standardizers could standardize what went into HTML. So at some point, they came up with a a different approach which is the one used in HTML5. This approach says, "Okay, you know, it's a living standard. If you want to see sort of the latest version, go to w3.org," which is the worldwide web organization that tries to keep track of this. They have an online document and, you know, every month or so they go and make changes to it.
+
+the big committee meetings that they had before but they try to have a responsible committee for it and you know it sort of we hope it works reasonably well. This approach started taking over oh I don't know about 2008 and it's worked reasonably well since then. To some extent what's happened here is that we had a system that worked for programming languages. What's valid C++? What isn't? We tried to apply it to HTML. It sort of worked, but not very well. And now we're adopting a different approach. And you can expect this sort of thing probably to happen to future software technologies as they come out. Right now, for example, we have very much a Wild West phenomenon going on with generative AI. There are no standards. People will try to standardize and they'll probably start off with something like this and then evolve it in other directions later. There's another problem that they ran into with HTML which was that this idea that you can omit closing tags or more generally the idea that is that we sort of parse generously.
+
+We're generous about what we accept as much as possible. We try to put something on the screen no matter how badly the data is formatted. You can put sort of random bytes into your web page and something's going to happen, right? That approach may work for naive browsing, but it's not going to work very well if you try to be run in applications where more reliability is necessary. So an attempt has to that's been made to sort of rationalize HTML. I'll put that in quotes. For sort of non-web applications. So for example, I don't know, if you go visit the social security website and you want to download a copy of your latest social security form or something like that, they can give it to you in PDF and all that sort of thing. But if you want the data, they will give it to you in a different format. This format is called XML, which is stored for extensible meta language. Or markup language depending on who you want to talk about. So the basic idea is what we want is for XML to be sort of the core syntax. And that core syntax will It's like this, okay? Except it's stricter than HTML because some applications don't want to be sort of so generous, right? So the core syntax is like HTML but stricter. In particular, in strict XML, for example, you cannot omit closing tags.
+
+There are other restrictions too, but this is the one that people tends to run into. And then with XML you can then supply extensions that are domain specific, right? For each domain. One example use of XML is called XHTML, which is sort of XML extended in the for web pages. But there are other sort of variants of XHTML which take this core syntax and then you can use it for other purposes like exchanging social security data or that sort of thing. And these other extensions tend to be, you know, less forgiving of making stupid mistakes. If they send me bad data, I kind of want to know about it right away rather than my web browser making up a different sort of social security number for me or whatever. All right. So you can think of XML in some sense as being sort of trees on wheels. If your underlying data can be put into a tree structure where you have nodes that follow rules, the nodes can have attributes, at the very bottom you have leaves, that are text or other nodes, then XML is sort of a good sort of format for that. And the idea is you can then sort of build, you know, exchanging servers and clients that ship XML to each other. It's sort of a generalization of HTML. All right. So that's one direction. I next want to talk about the DOM, which is the document object model.
+
+This builds off the idea that HTML, or for that matter XML, is really just a representation of a tree. And Dom basically says, "Let's look at the tree from the point of view of an object-oriented program." Right? So this is object-oriented access to an HTML HTML or XML. I'll just say HTML is tree. So the idea is you've got a tree in memory. You want to take a look at it. And you want to take a look at it inside a browser is the most common application, but it could be sort of applied in any other kind of application. So what do you need here? You need sort of first an easy way to sort of, you know, refer to elements of the tree.
+
+You need a way of saying, "Okay, I've got the DOM for the tree.
+
+Let me find the first paragraph in the first chapter of this book." I'm assuming it's a book.
+
+Just give me its first paragraph.
+
+That would be sort of one thing that you'd like to do with your object-oriented program, is navigate to the first paragraph because you're a browser and the user says I want to start reading. You also need an easy way to sort of traverse the tree. If the user says I'd like to search for the string CS35L in this document, well in main memory the document is represented as a tree. You need to be able to walk through that tree tree, visit all the leaves, look for the string CS35L, at least all the leaves that the user will be able to see, and quickly do that. So the document object model needs to sort of give you a way of traversing the tree in that way. And last, and not necessarily least, you need to be able to modify the tree. That is, you've got some you want it to display something different. And the way you can do that is you can take the tree and go splice and dice it, change some subtree to look like X rather than Y, and then tell the browser, "Okay, display this." So the DOM is going to give you sort of an approach for doing that. And in some sense, you know, this DOM supplies APIs that in principle are language independent. You can use any scripting language that has any salt anyway and it'll have a DOM and it'll support the same APIs but to some extent, at least for this class, JavaScript sort of rules in this area. So a lot of the, most of the applications that use the DOM are using the JavaScript bindings for these APIs. But it's not the only system out there and you may run into some other system. Any questions about these big picture things? I haven't put any source code up here. I'm just giving you concepts. Nobody's saying anything so I don't know whether or not this is all obvious or new or anything else. Yes?
+
+Yes. So you can have something that looks like this, right? Width equals 100. Like that. That's a void element. It has attributes, but it doesn't have anything underneath it. Other question? Yes? Oh, I don't have, I'm not an expert in that area.
+
+I don't have anything prepared in it. I'm just trying to give you the big picture to be honest. But basically it's reasonably complicated. There's a lot going on there. But this is the basic idea, right? You have to be able to wander through and people have tried to, you know, build fairly fancy approaches for doing this and simple ones and you sort of take your pick to some extent. Now there's a different approach.
+
+Okay, from, you know, and I sort of alluded to it earlier, right? Where I was talking about declarative, not imperative. And so far, the distinction has been, okay, you've got these trees, and HTML declares what's going to go in the trees, so that's declarative. You've got JavaScript that hooks into this. I haven't talked about how to do that. The JavaScript is imperative, right? Here's JavaScript.
+
+So it sounds like, okay, we got those two things covered. In practice, though, this isn't always enough. Often at times, there are things you want to do in your document that are declarative, not imperative, but they're declaring form rather than content.
+
+So, you know, we want this to be declarative as possible, right? Both of them. So we're, you know, we're staying in this sort of declarative axis here. But if you just use HTML to do this, you'll quickly find that you're going to run into problems. What sort of problems?
+
+So here's a paragraph.
+
+Now is a good time to, I don't know, study.
+
+There we go.
+
+Bold.
+
+Typical professor advice.
+
+The professor thinks this is easy. It's not that easy. Alright. So a problem with this approach is that if you write your text this way, you're telling the browser, I want this to be in italics. That's what the I means. And I want this to be bold. That's what the B means. You're making sort of style decisions at a very low level. Okay. And this is how kind of HTML started out. But what they discovered is that this doesn't work very well in terms of being portable to different kinds of browsers that want to do things in different ways. So typically you shouldn't see text like this. You should see something that looks like this. I'm starting a paragraph, same text as before, except here I don't want to say put it in italics. I want to say let's emphasize this.
+
+And over here, I don't want to say put it in bold. I want to say this, I want strong emphasis. Like this. This may look like it's just, I've got to type more stuff here, who wants to do this? But there's something more important going on here, which is The later form lets the browser figure out exactly how to render strong and/or emphasize stuff. It may decide to render it the same as before. Or this may be a browser that its user is partially blind and so it figures, well, the user can't really see the difference between italics and normal text.
+
+stuff in a different color that's easier to pick up if you're partially blind than just changing the font and use you know even a different color for bold. So the idea here is this is more browser agnostic. Whereas this is you know too specific. Because here we're saying too much about form at the lowest level of our document.
+
+So what we'd like is some sort of standard way to separate form from content in the declarative part of our application. And the standard way of doing that is called cascading style sheets or CSS for short.
+
+So by style, we mean here, you know, how the document is presented to the user. And the idea here is to put the style stuff in our HTML spec off into a separate area and then have the content mostly say, oh, I have this paragraph, this strong stuff, this section, all that sort of thing. And the style sheet will say, oh, here's the author's preference.
+
+preferences for how this stuff should be displayed. And maybe we'll follow those preferences and maybe we won't. So these styles are inherited in DOM subtrees. By that I mean if you specify the style for a chapter, that style will sort of propagate down through the tree.
+
+down to each section and each paragraph in that chapter. The sections and paragraphs can override the styles of their parents, but they don't have to, right? And it's called cascading because there's sort of a priority scheme for deciding what style is actually used.
+
+It's a complicated scheme. I once knew more about it than I don't know. I try to forget about it as much as possible. But if you're doing detailed web design, you've got to know this scheme, right? So you can get styles from the following. You can get them from the browser. The browser can say, oh, here's the default text style that I'll use for all web pages. So the browser can be source from styles. You can get styles from the user. The user can say, "I don't like the browser default. I want to use sans serif text instead of this ugly Roman stuff you're giving me with." And you can also get it from the author. That is the web page designer. And as you can imagine, you know, you have to decide who wins in this battle. Is the author going to win or is the user going That's where the priority scheme comes from. And these author styles, which is the styles that you'll be specifying if you're writing a web application, the browser and the user, that's something else, they can come from sort of inline. That is, you can have inline styles that appear directly in the HTML.
+
+something that looks like this for example. The span element is an element that really doesn't do very much except it's a container for a bunch of other elements. So here's the start of the span, here's the end of the span, you have a bunch of stuff in here, and then here you can say, I don't know, span style equals. You can put into this character you'd like to make visible to the CSS system and that style will propagate down to everything in this dot dot dot area. A sample style might be something like this. Font variant is a small caps. Semical, right? Use a slightly different syntax For styles, then we do for attributes. We give sort of the, but it's still the same idea. It's sort of here's the style's name, here's the style's value, and we type name, colon, value, semicolon. And what this is saying is that in this particular region of text, we want to be using small caps rather than ordinary text.
+
+What else you can have? The style can come from inline, it can come from the media type. So you can specify a style that will be applied to images, images of media type. It can come from lots of other places. And there's, you know, a whole bunch of sort of priority roles. I've mentioned some of them. For example, inheritance.
+
+A style can be inherited from a parent node in the DOM tree, but also styles can come from, you know, the equivalent of your DDD and that sort of thing. It can come from all sorts of sources. Most of the time when you use a style you might use something pretty simple like this, but occasionally you can do something more complicated and get some nice effects. And the idea here is that when you do it that way, you didn't have to write any JavaScript code. Part of what motivated this originally was sort of a division of labor. That is, web applications kind of have two sets of people working on them. One are the web designers who are the artistic types from North Campus. And the other part are the, you know, the software developers and hackers who come from South Campus. And to some extent, the CSS tends to be more of a North Campus thing because you're specifying style and presentation. These CSS things don't actually do anything except they make it look good. And for that reason, that may help to explain why, for example, I'm not much of an expert on a CSS. I like to write programs and I don't really care what my application looks like.
+
+But if you're in an area where design is important, this is going to be more of a big deal. All right? So that's sort of CSS. We should then do a little bit of JavaScript. I mean, we did it last time. We wrote a little bit of JavaScript code as part of our very simple node application.
+
+But I want to go revisit JavaScript and see how it hooks into all of this stuff. Well, first off, as I'm sure you know by now, JavaScript is YAPL, yet another programming language. And in some sense, it's not all that much different from the languages that you already know. Obviously, you know, it's sort of like Python.
+
+But even more dynamic I should say. And by that I mean even more than Python JavaScript decisions get made as the program runs inside the browser which means it's even harder to predict what a JavaScript program will do simply by looking at it. But oh well. Right? It can be hooked into HTML.
+
+It doesn't have to be, but it can be. And so you can say something that looks like this. Here is a script element. It's an HTML5 in earlier HTMLs. And we will give it as the attribute, source equals hello.js, something like that. And then we'll make it a void element.
+
+What this means is, if this is in the webpage, you know, HTTP something or another, you know, foo.org a b dot html, assuming that that's where this appears, then this tells the browser, go read this resource. Same as the other one.
+
+except we're reading from hello.js.
+
+And in effect, it does the equivalent of visiting this except not as a webpage, as a piece of JavaScript code.
+
+So you can retrieve this, you'll get a bunch of text, the browser will parse the text as a JavaScript program, and then it'll run the program right here in your webpage.
+
+You don't have to do it this way.
+
+Under this approach, you don't have the JavaScript code in a separate resource that gets downloaded separately by the browser.
+
+you just put the JavaScript code directly in your web page and you get the same effect yes yes that that would be a good example all right and when you're certainly when you're using it this way all right all right so um what are the pros and cons of doing it these two different ways yes Yeah, this is overkill. With like this tiny program, you definitely do it this way, right? This is forcing the browser to go do another, you know, HTTP GET, which, you know, you have more latency. Who needs that aggravation? Why would you might want to do it this way? Anyway, yes? Oh, yeah, if the program is enormous and you're trying to read the web page by hand, that would be one reason. Any other thing? Yes.
+
+Any reason why you might want to do it this way? You're able to easily use other people's JavaScript code without pasting. Right. It avoids cutting and pasting. If the other person's or maybe your code gets updated, you don't have to update all the webpages accordingly. It just happens automatically. There are good reasons to do it this way as well. Maybe involving copyright, for example. It could be that the JavaScript code is copyrighted. You can't just copy it into your webpage.
+
+That would be another reason. All right? So, you can put a whole bunch of stuff into these JavaScript programs. And as you do, you might run into a problem. And that problem occurs because it's very common for these programs You want to change what the DOM tree looks like in the current webpage in the browser. And so what you'll end up doing is you're writing lots of JavaScript code that contains many calls to the DOM API.
+
+And what these calls do to create more subtrees and etc.
+
+You can do that if you want and it'll work. But there's an alternate approach that is reasonably common in the node world, which is something called JSX.
+
+And what JSX is intended to be is sort of a shorthand for doing all this stuff. The idea being ideally instead of writing 20 lines of JavaScript code that manipulate the DOM, you just write one or two lines of JSX that mean the same thing. And why don't we take a break? This is a good time for a break and come back in 10 minutes and talk a little All right, let's start up again. Before I talk more about JavaScript correction, first off, I forgot the slash here in front of the closing tag over here.
+
+more important, it turns out I got into XML mode. I started telling you about XML when it really, I should have been talking about HTML. You're not allowed to write it this way, the way I had before. HTML insists on you spelling out the closing tag like this. You can't have the slash. I mean, HTML is very generous. It will take it if you write it the other way and kind of ignore the slash, and then it will automatically insert the closing tag, so it will work.
+
+except that's not really the proper way to do HTML and this is the proper way. All right, so we were talking about JSX and the idea here is relatively simple which is first off, you know, JavaScript is a small language. It has quite a library about it but the language itself was intended to be small so that you could put it in browsers that could run in wristwatches and it wouldn't take up much memory and that sort of thing. But what we want is we want to have sort of a way to conveniently manipulate the DOM. And JSX is sort of an extension to JavaScript or you can almost think of it as being pre-processed into JavaScript so that you can feed it into browsers by giving them the JavaScript equivalent but the programmers see the JSX. So you can write something that looks like this in JSX.
+
+and a semicolon at the end. This isn't JavaScript because that open angle bracket tells you right away we're not doing JavaScript anymore. But it is valid JSX and what JSX, the JSX parser will do is it'll take a look at this entire thing that looks sort of like HTML. In fact, It is HTML. And it will turn this into the necessary sort of calls to the JavaScript libraries to actually create a node that looks like this. This is an H1 node and it has an attribute with lang equals en that says it's an English language node and it has underneath it some text that says CS35L homework.
+
+And this declaration will be turned into something that's considerably more complicated that says create a node, create an element, it's an H1 element, add a language attribute to it, the value is EN, put the text CS35L homework underneath it and then put the result into header. So this will turn into maybe four lines of code rather than the one line that you see.
+
+So you can use JSX pretty much anywhere a function call can occur. Because the JSX, in effect, preprocessor can preprocess this JSX code into something that's in the form of a function call. Might be a long function call, because it has to do all those four things that I mentioned, but it turns into a single function call without affecting the meaning of the rest of your program. Once you have the element that you have, that you've gotten, you can, I don't know, say something like this. React DOM render.
+
+"Document.getElementById" That's a capital E.
+
+Of root.
+
+Close command.
+
+So inside your JavaScript code, if you call this, right, and you've done this ahead of time, this turns into JavaScript code that creates the DOM element that you want. This says, oh, please go render it, put it up on the screen for people to see. Yes? Yes, it acts just like the corresponding function.
+
+You don't have to use JSX, right? You could just write the function call directly if you want. Most people don't want once they get used to it. Okay, other comments on the JSX? Yes. If you're in the React JSX world, yes. If not, there's various other software tools out there that will do something similar, right? This is not the only game in town.
+
+All right, and one other thing I should mention is this nests. That is, here we can see we've put some HTML inside our JavaScript, but you can do it the other way. You can say something like this, const language equals equals EN, and const course equals CS35L, and const N equals 3, and then you can say const header equals H1 and lang equals lang curly braces. And what this means is, okay, stop pretending this is HTML and start saying, oh, here's JavaScript again. So this says take the value of this lang variable and interpolate it here as a string. And then you could say, I don't know, course assignment and plus two. Something like that. Close h1 semicolon. So you can put whatever JavaScript code you like inside the HTML and it will get sort of when JSX turns this into a bunch of JavaScript code it will leave this part alone. And you can nest even further if you want. You can put some JSX inside here, inside this JavaScript.
+
+switch back and forth between the two. You probably don't want to do too much of that but it's possible. So this lets you sort of easily manage the DOM of your tree more easily than if you try to do everything by hand in JavaScript. All right. I did want to mention one other thing about this sort of thing. It's very common It's common for people to want to transfer data from the client to the server.
+
+Right?
+
+So there's a sort of data transfer from or between, I should say, client and server.
+
+Originally, this is what XML was designed for. You want to get social security data out of the Social Security Administration, you use XML. In fact, you do to this day. A lot of older sites do that. Nowadays, it's safe to say another approach is probably more common, certainly amongst smaller applications, which is JSON. JSON is short for JavaScript Object notation.
+
+And the basic idea with Jason is you're trying to ship a tree from point A to point B over a wire.
+
+And so you ship it in the form of JavaScript code.
+
+So if we take a look at the screen, and if I can switch to-- An example of what's going on here. Here's two different ways of representing the same data. The top way is in JSON, right? That's just JavaScript code. The open curly braces says I'm start, I'm an object, right? And at the top level, I have one sub tree called the menu, right? And the menu, it's an object is is just basically something that maps names to values. Menu maps to this sub-object. The sub-object maps three names to values and the names are ID, value, and pop-up, and so on, forth and so on. The XML for the same thing uses the HTML-like angle bracket notation that we spent a good chunk of the earlier part of this lecture talking about. And again, you can see it's the same information. At the top level you have a menu.
+
+It has as one of its components a pop-up that has three menus and all that, three menu items and so forth and so on. It's exactly the same sort of idea represented in two notations. But I should warn you that there's another difference between these two things. It's not simply whether it uses angle brackets or curly braces. And that other difference is that In JSON, basically the labels belong to the arcs in your data structure, whereas in HTML and XML, the labels belong to the nodes, the elements. So if I were to write the JSON data structure here, I have something here at the top level. Underneath it, there is something that says I'm a menu. Menu maps to this other object. Underneath this other object, there's three sub-beta and you're building a tree, but the labels belong to the arcs of the tree. Yes? This means we have a JavaScript object and a JavaScript object basically can contain a bunch of attribute value pairs. These are the names of the attributes and then down here the subtrees, the sub-objects will be the values. That's basically what a JavaScript object is and that's how JSON works. In contrast, if we take a look at the XML, we really have a menu element that has as attributes ID and value, right? And then it has a subsidiary sort of element to pop up.
+
+So the data structures, even though they're both trees, and they both represent the same idea, fundamentally they're kind of different. If you find yourself importing XML data from the outside world versus JSON data, you probably will have to notice the difference and write your code accordingly. Question? You get the same information either way. It's just, how should I say it? It's sort of like a different attitude.
+
+You know, in some sense, the JavaScript model is simpler, right? Because objects themselves, they're just points in the graph, right? Whereas the XML model is heavier weight in that elements have attributes, which can just map to strings, that's it. And they can have sub-trees, which can contain whatever you like. So it's a more complicated model.
+
+a richer model, a richer model, a model where you can say what you want in fewer lines perhaps, but a big advantage of JSON is that you've already got a JavaScript interpreter sitting in your browser. It's easy to read JSON and write JSON, it just comes with a territory, whereas XML you've got to call some library and it's a hassle. Other comments on the distinction between the two?
+
+I next wanted to talk about performance just briefly. We talked about it a lot in the previous lecture but the performance attribute I want to talk about next is called the browser rendering pipeline. This pipeline is not the same as pipes in the shell.
+
+on here. Really the word pipeline here comes more from sort of the hardware notions that you have or will study in CS33 in computer architecture. The basic idea being that you have lots of things going on in the browser. You have browser modules, right? They take a web page from the outside world and, you know, the first module basically the web page is just a bunch of text so it has to sort of parse the text and then you know generate say a dom. Then another part of the web browser will look at that dom and figure out oh let's see how can we do the layout of the different elements here. And then another part of the pipeline will actually do sort of the rendering. Given that we know where everything goes let's actually put the pixels in the right spot and put with the text in the right spot. I've greatly simplified this. Actual browser rendering pipelines are going to be more complicated than that. But the key idea I wanted to talk about is that it's not like we parse, we get the DOM, we're done with parsing. Now we start doing layout. We figure out the layout. We're done with the layout. Okay, now we start, no, no, no, that's not how it works.
+
+What happens is that the parsing stage starts building the DOM. It's not finished. It's a tree under construction. It's only partly done, but we start laying it out right away. Why do we do that? Because users are impatient. They don't want to wait for that one gigabyte text blob to be coming over the network and appear on your screen 10 seconds They want to see right away, at least the first part of the text. So what's going to happen here is that this might be incomplete. More DOM information will come in later, but we already have an incomplete layout. And already on our screen, we'll see part of the web page. And that's sort of a normal way that web browsers operate.
+
+I'm talking about web browsers on your laptop and also browsing applications running on your phone. They all work this way. Now what does that mean? The browser is trying to run fast. So I already talked about one optimizations, which is in order to improve latency, you render even when parsing isn't done yet. Or maybe layout parsing is done but layout hasn't been done yet. The parser in the browser in some sense it will be operating on incomplete information when it does that. It doesn't know what the entire contents of your web page will look like but it starts showing the user anyway.
+
+All right, what are some things that it can do to make this go fast? Right? If the browser sort of guesses that an element won't appear on the screen, and that guess could occur during the rendering phase or during the layout phase, it's not going to occur here.
+
+this guy doesn't know anything about the screen but the layout may say oh I'm gonna put this element way down here at the bottom and my guess is that part's not going to be rendered right away because they'll need to scroll down to get it. If that happens then the browser will say well to run faster let's not execute the corresponding JavaScript code. Don't execute the script yet.
+
+It may have parsed the JavaScript, you know, the script element. It knows there's a script there, but it figures, that's going to be at the bottom of the screen. It's going to take 10 seconds before the user scrolls down to that. I won't run the code. Yes? How does it know when it's too long in operation? What cost is it associating? Is it a call? Is it based on what function does it? How does it figure that out? How does it figure out how expensive the JavaScript will be? Typically, it doesn't does not know. So this decision is sort of an all or nothing basis. I suppose you could have a super smart browser that would make guesses based on what the code looks like. I don't know of any offhand that do that. But what this means is you have to be careful about which JavaScript code you put where in your browser. If you expect the browser to look at all the script elements in the web page and they're all active and all that sort of that might not be the case. There may be some part of your JavaScript code that doesn't start up until the user does something. The code isn't even active at all. So you have to be careful about what you put where in your page. Also, you have to be careful about testing your applications. Your application may work very well as long as the client and the server are both at UCLA and you have a really good network here.
+
+We have great networking here, all that sort of thing. But if you try to run that same application with a client in the Yukon or something where the connectivity is kind of flaky and slow, then all of a sudden the application may be just horrible. And it's not simply because the connectivity is bad. It's because you didn't put your script elements in the right place. All right. So if you're really high performance, You probably won't run into this, but I'll mention it. Your JavaScript code can run while later parts of rendering occurs. JavaScript and rendering can overlap. Since the JavaScript code can change the DOM, It's possible for your JavaScript code to change the DOM before it gets rendered. Right? Which can lead to some interesting effects if you're not careful. Right? You can go in effect, you can think of it as follows, right? In some sense, this means that not only is a web page self-modifying, right? It's a program, you can think of it as a program that modifies itself as it runs.
+
+because the layout engine might say, "Okay, I have this virtual webpage and it's going to be, I don't know, say, 2,000 pixels by 20,000 pixels." And I know that the physical screen is about yay big, right? So I know that at least at first, none of this stuff's going to be displayed. So I'll execute the code up here. I'm not going to even execute the code up here until someone scrolls over it, that sort of thing.
+
+So that's the kind of inference that it'll do. It doesn't know what the JavaScript code does. All it knows is that it's not on the screen. Or maybe it's in a pop-up or something. And so it can delay executing the code. All right. Well, I did say I was going to talk a little bit about Python. So let's do completely change the subject. And I have sort of Python catch-up to do.
+
+If you recall, when we were talking about Python, I went through Python basics. And I covered one basic sort of type, which is the sequence type, lots of different sequence types. But I wanted to cover two or three other categories of Python types so that we can all come to the same level of competence in Python. The first is mapping types.
+
+of which by far the most important one, the one that you run into most often is dictionaries. They're built into Python and the idea is that if you have a dictionary D, you can access it via a key K using the same syntax as sequences. In fact, the code that uses the dictionary may not even know whether it's a dictionary or a sequence and may not care. However, there is a big difference. This key need not be an entity. Because dictionaries in some sense are just glorified hash tables. And when you say D sub K, you're saying, please look up the key K in the dictionary D and give me the There is a restriction though. K must be immutable. You can't use a mutable key in a dictionary. And the reason for that is, again, they're just glorified hash tables. The way this works internally is Python has a hash function, h of k, which returns It uses that integer to access, you know, internally some table that will then look up the corresponding value. If the key were mutable, this hashing scheme wouldn't work because you would hash a different value of K because K mutated and you wouldn't find the value that you wanted. All right. So what can you do with dictionaries? Here's some operations on dictionaries.
+
+What's the length of a dictionary? Any Python experts in the house? With sequences is obvious. Yes? The number of key value pairs, correct. And what happens with here? You can probably guess what this does. Clear takes a dictionary and removes all the key value pairs from it. So dictionaries are mutable and what that tells you is you cannot use a dictionary as a key in another dictionary. It's not allowed because we have operations like d.clear. You can also, of course, I should say do this, d.k equals v. That modifies the dictionary. If there is an existing key value pair with the value k in it, it replaces it with kv and if there isn't one it just creates it. All right, let's try this. Probably guess what this does. This takes a dictionary and makes a copy of it. The copy has the same key value pairs that the original did. Those keys are immutable so the copy can share the keys. The values are mutable but the copy shares the value. So if you modify the value via one dictionary you'll modify it in the other. However, the dictionary itself is copied. So if you change this copy you don't change D.
+
+There's a collection of three sort of methods for dictionary, dItems, dKeys, and dValues. These give you sort of the items in the dictionary, that is a bunch of key value pairs.
+
+as a sequence, the keys, that is just the keys in the dictionary, again as a sequence, and the values, which are the values in the dictionary in the same order that you see in the keys. One thing that should be mentioned about these is that these return a view object, that is these sequences, if you go and change the dictionary, the view The view object is just taking a peek at the dictionary every time you access the view object. So in some sense this view object shares with D. If you change D, the view object changes. It's not like you make a new sequence containing all the items in D. Instead these are fairly fast sort of methods because they don't actually have to make a copy of the dictionary at all. All they have to do is create an object that in effect refers to the dictionary.
+
+Question?
+
+Can you clarify?
+
+So what you said, when you say keeps copy, does that mean that when I copy it and I add something to it, if I change the values that were copied already, those are going to change the time that you're not?
+
+Yeah, let's do some, so I don't know, if you say, I don't know, list of, you know, XYZ, right?
+
+So here's L is a list and then we say let's create D as an empty dictionary and then we'll say D sub A equals L, right? And then we say E equals D dot copy. In effect, what we've done here is we've created a data structure that looks like this. L is a list which contains X and Y and Z.
+
+and D is a dictionary which says I'm going to map A to this list and E is a different dictionary which says also says I'm going to map A to that same list. So now if I say something like this E A 1 equals 7 what I've done is I put 7 right here.
+
+So I'll be able to see that either via D or E. So the two dictionaries, they're copied, right? If I go change D sub A to be something else, then all I've done is done something like this. This now points to a 19. But that list is still modified. Okay? So it's important to know exactly how Python shares stuff when you're writing a bunch of detailed Python code. Yes?
+
+Oh, items are key value pairs. Values are just the values, right? So this gives you a sequence of tuples. Each tuple has two of them. The first guy in the tuple is the key. The second one is the value. This just gives you a sequence of value of keys. This gives you a sequence of values. Yes?
+
+No, these are just view objects, right? So basically, you're just sort of, this is really a very small object that goes and points to D. It doesn't actually make a copy of the values or anything like that. So, and since it's a view object, you can't go and fiddle with the dictionary via the view object. It's just looking at it. If you want to go change the dictionary, you have to go back to the original dictionary. How is it implemented internally? I don't know.
+
+All right. Other comments? Yes.
+
+So if you make a variable for like either items or values, and then you print that variable, it's going to reflect that change.
+
+So we do this, we then change D, and then print KS. Yes, it'll reflect the change.
+
+Question?
+
+When I said E, oh, what's the difference between this and this?
+
+Oh, when you do assignment in Python like this, it's always in some sense, if you're thinking in C++ terms, every assignment is a pointer assignment. You know, when you do this, all that happened is this. All right. So you didn't make a copy of the dictionary at all. If you modify the dictionary that D refers to, you will also modify the dictionary that E refers to because they're the same dictionary.
+
+Right, every assignment is like that in Python. Assignments are never expensive in and of themselves. Right? If you call copy, this might take a while. But if you just assign something, that's fast. Yes? Yes. No, I think you can, they're read only in some sense. Yes. The thing that they look at might change out from under you.
+
+Yes.
+
+I think that kind of answered my question.
+
+I was wondering if you set a view object equal to a variable, change the dictionary, then look at the object and change the...
+
+You'll see a change, right.
+
+So you can't use these view objects as keys in dictionaries, right, because their values change all the time.
+
+Yes.
+
+Oh, the difference between these two things?
+
+All right.
+
+So let's say you have a dictionary with, you know, a hundred elements in it.
+
+Right?
+
+Here's our dictionary.
+
+And you can think of it as mapping, you know, K maps to some string ABC and V maps to some other string XYZ, right? So there's, you know, there's a hundred things in here, right? D just refers to that dictionary. If I say E equals D, what I'm saying is I want E to refer to the same dictionary as before. So if now I do E sub 5, or e sub q, let's say, equals RST. What I've done is, all right, here's the q element, and it now points to the string RST, but there's only one dictionary. So if I now print d sub q, I'll see the RST. If, on the other hand, I hadn't done it this way, if, on the other hand, I'd said e equals d dot copying, what's going to happen? I'll create a new dictionary that's a copy.
+
+of this dictionary, same key value pairs, in fact the values are going to be shared, right? But we have two dictionaries. And now if I assign E sub Q, oops, I won't change D sub Q because they're two separate dictionaries. Question? This stuff happens in JavaScript too, right? And you have to know when you're making copies and when you're not. Yes?
+
+Well, all of these values that I've written here are immutable. So the fact that they're shared doesn't matter too much. But if the values were mutable, then it would start mattering. That's right. Copying is only a top-level copy. It's not a deep copy. It only copies the dictionary and not everything that the dictionary points to. All right, other comments? Yes.
+
+Yes.
+
+Yes.
+
+I'm not making a copy of the list. I'm just saying I want L to point to the same list that M points to. Other comments about these operations? Yes, in back. I'm sorry, my hearing is not what it used to be. Yes? Oh, well, you could make a copy of the keys, right? That is, you could do something like this. Right? The list constructor, you give any sequence to it, it creates a new list and then copies it across, right? So, you know, if you want the copy, you can ask for it, absolutely. Other comments? Yes?
+
+What's the best way to iterate through a dictionary? Oh, well, you can, you know, or I don't know, something like this. You know, just iterate through the dictionary, right? This, by the way, suggests there's an issue going on here.
+
+which is dictionaries are hash tables and they talk to you about hash tables in 31 right? So one of the things about hash tables is when you hash the hashing function sort of scatters the keys all over the place and later on if you go look at the hash table and say oh I'd like to know what all the keys are in the hash table if you walk through that hash table sequentially you'll get the keys in That's how Python started out. It started out doing dictionaries that way. What they discovered though is there's a hassle involved in actually saying, oh, hashing sort of scatters things around at random. And the hassle means that if you do something like this, if you run your Python program on machine X, it will iterate through the keys in one order.
+
+and then if you run the same program on machine y, it'll iterate through the keys in a different order. So they have fixed that. Python dictionaries are ordered. So they are not simple hash tables. If you sequence through, say, the items or the keys or the values in the dictionary or you have an iterator going through a dictionary, the order that you'll run into is the same as the order when the keys were first added to the dictionary. Right? By first addition of the key to the dictionary. All right.
+
+I feel like I haven't specified this carefully enough. So let me try to give a detail of what's going on here. Right? So if you say something like this. When you're done there will be two items in the dictionary. Right? One for K, one for L. You've thrown away this key value pair.
+
+because you replaced it over here. However, K got there first, so the order here is going to be KL. If, on the other hand, you then do the following. You can delete elements from a dictionary this way. When you're done, there's only one item in the dictionary. It's L, so obviously if you scan through the items, L will be first. Suppose you then do this.
+
+L is still first now, right? When you're deleted, you lose your place in line, right? Now, what's going on here inside Python is it has to maintain sort of a next field or some way of remembering when keys were ordered, added, and when. Yes? Why does order matter? Order matters because of this sort of general software principle which is we want reproducible behavior.
+
+We want our Python program to output the same to behave the same way regardless of what machine we're running on and regardless of what the hashing function is.
+
+That encourages portability. It makes things easier to test. There's a lot of good things that follow from that.
+
+But there's a cost. And the cost is, you know, the Python has to figure out how to represent the order somehow internally. It can't just use a simple hash table like what you used in CS31. Right? And what the Python developers have decided is, it's worth it. This reproducible behavior thing, that's a big deal. A good many sort of software bugs result in behavior that's not reproducible.
+
+in your program, it'll misbehave. The next time you run in your program, it'll misbehave in a different way. The next time you run in your program, it'll work. That's a disaster. Nobody likes that. I don't like that. You don't like it either. We want our programs to fail reliably. If they're going to crash, I want them to crash the same way each time. That way I can debug them. And that's really what's going on here. We want the Python programs to either work the same way everywhere or when they fail, fail the same way everywhere.
+
+Question. So can I get the nth element in a dictionary and order them? You can grab the items. That gives you a sequence. And then you say, give me the nth item, right? Like this. That'll work. Yes? Is updating a dictionary still order one? I believe so. Don't quote me on that, though.
+
+I expect they did a pretty good job of it. So they increased the constant factor but it still should be order. Well, wait a second. I mean, hash tables are not really order one, right? Are they? I thought hash tables were order log n where n is the number of items in the hash table because as n increases, you need y.
+
+Wider and wider integers to represent the indexes into the hash table, right? Isn't that right? Wait a second, wait a second. Oh, we have to take a break here. A good hash table is order one. No, what the really, okay, the reason they told you hash tables are order one is because they knew you were running on machines with finite word size, right?
+
+So the x86-64 has a 64-bit word. If you hash into a nice 64-bit value, that's going to be enough no matter how big the table is because the table can't be more than 2 to the 64th bytes, right? If you assume that memory is finite, then hashing is order one. But if you want to scale past 2 to the 64th, it's not order one anymore. It's order log n, right? And they don't want to tell you about that because this is a theory thing. It's not a practical thing. Yes?
+
+Yeah, because you need an infinite, well, that is, if the memory can grow without bound, it's not that you have infinite memory. You only have enough memory to solve your problem. It's just your problem is enormous, enormous, enormous. And at that point, you've got to make your words wider, and that costs you. The width of the word, it's the width of the word times the size of the problem, and the width of the word is order log n. Anyhow, sorry, I went off into theory mode.
+
+This is a good time I think to stop. I have more thing to talk about Python but we have a midterm coming up soon, right? Just to make sure we're all on the same page. Okay, so they're going to discuss this in a discussion session on Friday. So if you're at all concerned about the midterm, please come to discussion. Yes, question. Sorry, what?
+
+Is it on Thursday? Oh! Well, forget what I was going to tell you. Don't worry about the midterm at all. Shoot. Oh, oh. All right. We could make it Thursday if you want. No, no, no. All right. We'll make it a week from today. Sorry to alarm you. Wait, wait, wait. Wait, wait, wait, wait. Did I mess up again?
+
+What did I do? What, what, what? Did I say something wrong? Midterm should be a week from today, right? Wait a second. Do we have any strong preferences here? You want it to be Thursday, right?
+
+Who put it on the website? Two days. Well then, I guess we have to do it in two days. I mean, I don't want to change. Did I really say May 1st? Now you've got me all confused.
+
+Don't we have a schedule here? And the midterm is supposed to be May 1st. So I think we should stick with May 1st. I think we should stick with May 1st. You had me going there for a second.
+
+So apologies for all of those, all that confusion, but we'll see you then and I hope you enjoy it. Yes. Then we only get this halfway part and the midterm. I won't cover the rest of Python. All right. Other comments. All right. Well, I'll see you then.
+
