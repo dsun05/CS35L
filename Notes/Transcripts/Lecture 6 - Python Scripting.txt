@@ -1,0 +1,354 @@
+All right, so it's time to talk about Python, which is a difficult topic to talk about for me because two-thirds or three-fourths of you people already know Python, so I need to say something that will entertain you, but then we also have some people who have not yet been blessed with the insight of Python, and so we need to sort of start from scratch for those people.
+
+So I'm going to try to do both at the same time. And I'll start out by pretending I'm writing a little Python code to check my stock market. And if anybody has been looking into the stock market today, you'll know that's sort of a strange thing to do. So we're going to run Python. Meta X run Python. If you're used to Emacs, you can use your own favorite system if you don't like it. I guess that's sort of readable. And then we can look up the So let's say my current trade in Python, in say Google stock, so let's say my current trade is I did 100 shares and the price is $153.36 and this is the string that I get from scraping some website or HTML or something, right? I get this string but I want to deal with this in my Python program in a more sort of intuitive way for Python.
+
+That is what I really have here is not a string. I mean, that's what it is. But what I really want is the stock market symbol, G-O-O-G, and then the number of shares, which is 100. That's an integer. And then the price, 153, 30. It was 200 bucks just a few months ago. Anyhow, sorry. So I want to sort of split that out into three pieces, right? So what I can do is say, okay, what I really have is So what I have here are three things. I have a string and Python has a built-in function for strings called str. It's actually a class, a class called strings. And I want to say, oh, well that first thing there is really something in that class. And similarly, I have an int and I have a float. So what I'm going to do is I'm going to take the three types that I want.
+
+and put them into a list. This is the syntax in Python for a list. And you know, so my type list is a list of three types or in Pythonese three classes. The string class, the int class, and the float class, right? And what I want to do is take apart that line, which is a string, and sort of filter it through that sieve, which is my list of types.
+
+So what I can do is first off I can split up the line into its three components. Right? So let's call that S line and there's a method in every strings called the split method. Right? And the split method if you apply the split method to any string and give it an argument which is a separator It'll give you a list of all the components of that string that were separated by the separators. So I'm basically saying split that line according to commas. So we can do that and S line here is going to now be a list of three strings. And now what we want to do is take each of these three strings and sort of run them through those three classes.
+
+That is, we want to take the first string and say, well, it's a string. Tell me what it is. Obviously, it'll be itself. We want to take the second string and say, it's an int. All right, and that'll give us an integer and so forth and so on. And, you know, we could do that individually. We could say something like this, str of goog, right? That gives us just that string. We can say int of 100, the string 100. That parses the string and gives us the integer and so forth for float.
+
+But obviously we don't want to do that one at a time. We want to do it more systematically. Now there's lots of ways of doing it. But one way to do it is with the zip function. The zip function takes two lists and it treats them sort of like a zipper. And it sort of zips them up and you get a single list of pairs where the alternating members So we can do something like this. Z will be zip of type and S line. And Z is sort of that list of pairs except it's packaged up inside an object because it's going to be cheaper for it to sort of give you each pair as you ask for it. We can ask for it by saying convert that to a list. And when we do that, we'll see, oh, okay, if you think of this zip object as a list of pairs, well, there are all the pairs in it, right? Each pair we map, we say, okay, the first pair is string gug, the second pair is int, and the string 100, and the third pair is float and one, all right. So what we could do, again, if we wanted to sort of, sort of do this one at a time, right? We could say something like Z sub zero, right? Which gives us, oops, LZ equals list of Z, right? I'll try this again. LZ sub zero. We can say, now what am I doing wrong? Any Python experts can help me out here?
+
+there's two-thirds or three-fourths of you that already know it. What have I done wrong? LZ is a list of pairs, right? No, it's not. I messed up. When I ran list of Z, I exhausted the iterator. So we're going to have to do this again. All right? And we'll do something that looks like this so we don't have to do it over again. All right? All right.
+
+of strings again. What happened when I made the mistake is the zip object is one where you can walk through the object, but as you walk through the object, it sort of discards all the things that it has seen again. So if you say, oh, give me everything in it twice, the second time it says there's nothing there and we got the empty list. So here we have the list of strings that we want, and what we could do is do something like this, right? Let's set our sort of class constructor to be LZ sub 0. And let's set our value to be C equals LZ sub 0/0, right? So C is the string and then V is LZ sub 0/1 and V is going to be goog and then we can say C of V. We can convert our string to string type which isn't really doing much. And we could do that one at a time. In other words, we could write a loop to iterate through this list by doing sort of an index and all that sort of thing. The same sort of thing that you saw in C++. But that's probably not the best way of doing things. Yes? That's where I was headed. That's exactly where I was going. So basically you're saying I'm going too slow and I should have done this faster.
+
+I just wanted to-- Oh yeah, that's the direction I'm headed, right? That is, this is sort of kind of too low level stuff. If you write code like this, like I'm sort of doing on the fly here, you're writing not in Python, but in some other sort of like C++-ish sort of thing that, you know, sort of you're migrating into Python. You know, what I really wanted to do was write something that looks like this, for c, v in zip type line dot split.
+
+And let's see, like that, there we go.
+
+So what I've done in this one line here is I've said, Okay, let's do all that zip stuff that I did. That's the thing after the n. And then I said, okay, let's iterate through that zip object that zip returns. Each time I sort of iterate, I will find a pair. I'll assign to the local variable C the first item in the pair and to the local variable V the second item in the pair, right? And then I'll evaluate calling the function C with the argument v and then I'll take that value as the sort of the ith entry in the resulting list. This sort of thing is called a list comprehension and it's sort of a routine way in Python that you can use to sort of take something apart and then put it back together in a way that's sort of nicer than what you started off with. Now I'm not saying every line of code should look like this and also I guess what I'm I'm not saying is you should strive to make all your programs in Python one-liners. Right? Because the problem with that approach is if you strive to always write code that looks really compact and all this sort of thing, it can get harder and harder to read. Still, you should know about this kind of thinking. Right? Don't always think in terms of just for i equals zero, i less than n, i plus plus.
+
+You can do that in Python. It'll be happy if you do it. It'll run. But you will be missing out on sort of being able to think through your problems at a somewhat higher level and then solve your problems at a somewhat higher level than just doing things at random at a low level. So that's sort of one message I want to give to you about Python is try to sort of use, how should I say, program like the Python do. Don't try to program like the C++ guys do. It's a different world. All right. So I'd like to step back for a second and talk about where Python came from because a lot of where it is now is sort of motivated by or a reflection of its history. Normally in computer science we don't like to talk about history because, you know, history is for, you know, historians, that's the history department. They don't make any money. We do that sort of thing. All right. And I get that. You know, you don't want to, you know, spend all your time looking at what mistakes that people made 50 years ago and all that sort of thing. And yet still there's a big reason why Python is successful now, shall we say, sort of stems from where it was introduced and why. All right.
+
+So, I'm going to go back to the 1950s, where the most popular programming language was a language called Fortran. It's still, by some measures, a top-20 language, because computer science is a slower-moving field than you might think. It's mostly used for scientific computing, and when it was new, people tried to use it to teach intro-programming classes.
+
+at universities. And what they quickly discovered is something that you've probably discovered with C++, which is Fortran is very unforgiving. You make the slightest stupid mistake in Fortran, you get this weird error message, your program crashes, and then, oh, this is ridiculous. And plus, back then, they had to all use punch cards and all that sort of thing. It just took forever. So in the early 1960s, there was a rogue project at Dartmouth which was beginners all-purpose symbolic something or another. And the basic idea of basic is that it was sort of Fortran minus minus. A simplified version of Fortran minus minus, but also it's easy to use. Much simpler, much more forgiving of stupid mistakes, and it used some new technology at the time called Timeshare, in which a single million dollar mainframe could be shared amongst 10 or 20 users and thus you didn't have to spend as much money to program and you could type in and get your answers right away. Basic in some sense was quite a success, very popular. It's still one of the top 20 programming languages out there, right? Microsoft still pushes Visual Basic for reasons that escape me and that sort of thing. So it evolved, it got big, and about 1985 or 1990, there was a reaction to Basic, right? Because it had gotten sort of big and also it's sort of old fashioned. And some sort of professors at the Center for WI, that is one of the leading sort of institutions of computer science in the Netherlands of all places, said, we need to do this all over again, right? So it got big and it's kind of old and it's full of things like, you know, loops and all that sort of thing. And, you know, it was quite popular at the time, but it had sort of escaped from its original goals of being a simple teaching language and it turned into a production language.
+
+So they said, okay, we'll come up with an even simpler language called ABC. Right? So you can think of this as being basic minus minus.
+
+Okay? But they wanted this to be even easier to use. And instead of being based on time-sharing technology, this was based on personal computers. So the idea is you could take an ABC sort of system, slide it into your computer as an optical disk or even floppies way back then. It would come up on the screen and you would be in the ABC world and you could start programming. And one of the things these computer scientists said is, we're spending too much time in CS31 teaching things like indenting and heaps of and all that sort of thing. Do they still teach that here? What a waste of time. I mean really. How many times are people, are you going to be paid in the real life to write heap sort? Like zero, right? And also all this stuff about indenting. You got the curly brace and you got indent here. You got points taken off. I mean who wants to waste their time doing this stuff? So two of the fundamental innovations in ABC were first, we're going to attack the indenting problem by saying, we're not going to waste our time in class teaching you about indenting. We're going to have the system require you to use proper indenting. And if you don't indent right, your code won't run. That way we don't have to teach it to you. I'm exaggerating, but I hope you get the point. They didn't want to have to grade indenting. They just wanted to have the system enforce it. One little thing. The other thing, and perhaps more important, they didn't want to have to teach you all these elementary algorithms like binary search or heap sort or anything like that. You know, the system, all that stuff, it solved problems. These problems were solved in the 1950s. Why are we still teaching you how to solve them now, right? Instead, let's have a system where the basic computer science data structures are already built into the system.
+
+about them. You can write the program that you really want to write and not have to worry about how do I build a hash table. What a waste of time. Just have the system do hash tables for it. All right? You get where I'm coming from, I hope. Any questions about the big picture for ABC? All right. So they built their own competing system, competing with BASIC. Right? Instead of taking the floppy and putting it in a new computer and running BASIC, they took the floppy and they ran it in and you would run ABC. They sent out floppies to all the high schools in the Netherlands and say, please try this out. This is great. And it was tried out and it flopped. Why? Because the high school students came back to their teachers and they said, nobody's going to hire us if we learn ABC. We have all those jobs out there in basic. And you know, ABC is just not going to work, right?
+
+So they gave up. They went back to teaching basic. But these ideas didn't die. All right. What happened soon after that was the internet started taking over. People had a lot of sort of need for ad hoc programming. Or what we sometimes call scripting, right? Because it's usually done with scripting.
+
+A lot of competing systems came out to do that sort of thing. We've already looked at one called the Shell. There was a bunch of others that I'm not going to go into. These were all done very quickly without perhaps a lot of thought. The sort of computer scientists in the Netherlands looked at all of this messy situation here and said, what a pain. What people were doing is they were like using Shell scripts to run and then Perl and then Sed and a whole bunch of other things. This was the little languages approach and you know it kind of meant you had to learn a lot of little things. Also it wasn't very disciplined. Right? For example Perl was designed by an English major. Right? Who thought well you know sometimes you want to say x if y sometimes you want to say if y x I'll let you say either way. What a mess. Right?
+
+So, the inventors of ABC said, "Let's take all of this good stuff that we have, all these great data structures." You don't have to do a heap sort. Indentting is done for you. And let's redo it in this world. Let's come up with a competitor to all of these things. And that's basically what Python is. And over time, and my goodness, it took a long time. It's taken 30 years or something like that.
+
+Nice properties of Python compared to all of these alternatives has won a lot of hearts. By some measures it now has 25% of the software engineering market. Measuring that is a very difficult thing. Don't quote me on that. But it's a very successful system. And partly it's successful because it was designed by a bunch of people who knew what they were doing and were trying to make it easy to use.
+
+You need both in order for a system like this to take open. Now when we take a look at Python, I'm going to do some Python basics. I hope the people who are experts don't completely tune out. But as we go through the basics, even for you experts, I want you to think, why did they do Python this way and hook it back to that motivation, right? Because a good chunk of success in software construction is understanding why, as opposed to knowing about all the little details and where the quotes go and all that sort of thing.
+
+All right. So, well, first off, I guess we should talk about indenting.
+
+You don't have curly braces in Python like you do in C or C++ or Java or most other languages.
+
+Instead, you mention the block structure of your programming by indenting. You have to indent properly.
+
+The way the Python syntax says, "Okay, it's okay to start indenting," is you have a line that ends in colon. And that really means this is standing for the start of an indented block. And then you can say, you know, x equals one. Everything inside the block has to be indented equally. If you put one extra space in there, it starts yelling at you. This way, it lines up very nicely, just like, you know, the order like things to be done, right? And you can, you know, increase your indent and nest in the usual way. That sort of thing. Now, if you don't want to do this, if you don't want to break up your code in that nicely indented way, you can do stuff that looks like this.
+
+And if you want to jam more than one sort of statement on a line, you can just separate it by semicolons. All right, so indenting is not required. You can get away with not doing it, but my suggestion is at least if you're starting out, just do it the long-winded way. It'll make the code easier to read. It'll make it easier for us to follow and for you to follow.
+
+Now, can you see any problems with this idea of using indenting rather than curly braces for programming? Yes? If you mess up your denting, you change the meaning of your program, right? Is that what you're saying? Oh yeah, if you copy paste, right? You copy out of one spot and paste it into another. If the indenting has changed, you've got to re-indent, right?
+
+And that wouldn't be a hassle in C++. Anything else? Yes, in back. Isn't it what? Oh, well, you can say elif if you want, but here I said else and then if, right? And so, you know, we, yes, elif would probably be shorter, but this is valid code. Another one?
+
+Probably a little bit, but these days systems are so fast that that isn't as big a deal as it was back in the 1960s. Yes? Oh yeah, I should warn you about that. How big is a tab? Where are your tab stops? Unfortunately, opinions differ. The one right way to do tabs is every eight columns. At least that's my opinion. Other people like them every four. Goodness knows what else. The problem then is if you walk from the eight column tab world into the four column tab world and you have tabs and sometimes spaces, then you're in trouble. The simplest way around this problem is never use tabs.
+
+Okay, that way everybody will agree on how much your stuff is indebted and you're off to the races. So that's my suggestion at least when you're starting out. Experts can disregard that and all that sort of thing. And please don't try to do anything really weird like using narrow width spaces or double wide spaces or anything like that. That's just totally asking for trouble. Just single individual ASCII spaces for indebting, nothing else. All right, any other issues you can see with this?
+
+There is one other problem I can see that I've run into. If you're doing software engineering, you will occasionally want to write programs that generate other programs. Your program will print out a program and then you'll take that other program and then use it somewhere else. It's more of a pain to do that with this than it is with C's style. Because if you're just using print statements to print out a program, you can see, Open curly brace. Okay, now I'm at the start of some sub thing and then close curly brace. Okay, I'm done. If you have to do it with this, your program has to constantly keep track of how far everything is indented and indent everything appropriately. So this kind of notation makes it harder to metaprogram, which is something I dearly love to do and maybe you'll like to do it as well at some point. But okay, that's the basics of indenting. All right.
+
+Let's try something else. Numbers. Everybody in Python should know about numbers. Right? So what happens if you do this? You get a big number. Oh, very good. Let's try that again, right? Oops. We'll do that. We'll put that into X.
+
+And then we'll do x times x times x. So Python is like Emacs Lisp and a lot like some other enlightened scripting languages in which the integers can be as big as you like. Eventually, you know, if I keep squaring this integer, I'll run out of RAM or something. But integers just work the way you think they ought to. We also have floating point numbers.
+
+And what happens if you keep doing that with them? Oops. When floating point numbers overflow, and that happens at about 10 to the 308th, then you get this funny value called infinity, which if you've taken CS33, you'll know all about infinities and how they work. And if you haven't, you have a lot of fun to look forward.
+
+All right? But infinity, obviously, is going to be greater than any integer. It's just that it's a very approximate number. All it means is that, hey, it's some value greater than 10 to the 308. All right? Suppose we do something like this. What happens in C? You get integer division, so the answer is zero. What happens in Python, you get a floating point number. So division of integers does not necessarily give you an integer. It gives you an approximate value. And that's something that you have to watch out for. If you really want integer division, Python spells it with two splashes, right? Like this. Whoops. One slash slash three, right? And then that will give you the zero that you're used to from C. Let's see. What other numbers do we have?
+
+What do we have? Well, we have complex numbers. All right, so one plus two J is a number in its own right. It's complex. You can think of it as a pair of floating point numbers, I guess, if you want, whether the representation is, you know, a real number plus an imaginary number. And Python will let you do arithmetic on these guys as well, right? So I don't know. Suppose we do something like this. Import cmath and say cmath dot square root of 1 plus 2j. You get this complex number or you can take the square root of minus 1. And you won't get an error. You'll get 1j which is Pythonese for i. The people who wrote Python were electrical engineers and they came a little late to the imaginary number games. They use J rather than I. Okay? Any questions on numbers? I went through something there without explaining it. And nobody asked me a question. I guess that means everybody understands it. Yes? Oh, yes.
+
+is the word import. I never mentioned import, right? Import means pull in a bunch of code from the Python library. That turns into a big mess because the question of what's in your Python library is a more complicated question than you might think. Luckily, though, Python has some standard libraries that you can expect every decent Python implementation to have. One is the math module, which deals with real numbers, and the other one is cmath, which is complex numbers.
+
+So if we did this, if we did an import math and say let's take the square root of minus one, right? It's going to say, oh, I'm sorry, you can't do that. Minus one is not a valid square root thing. So you can, you know, you have two different feelings about what square root means, the real square root and the complex square root, and you can use either one.
+
+Other questions about numbers? All right. Let's do strings. Now, you may have noticed that you can write strings this way or you can write them this way. Python, by default, when it prints out a string, prefers to use single quotes, But you can use double quotes if you like. This is the Dutchess, you know, Holland is sort of halfway between Britain and the U.S. And so they wanted to be happy with either American style or British style quoting. But other than that, there isn't that much difference between single quote and double quote. It's purely a syntactic sort of constraint. However, there are some extra things you can do. For example, suppose you do this.
+
+or this.
+
+Now, these strings have backslashes and newlines in them, right?
+
+So the backslash escapes in Python, at least the simple ones, are like the backslash escapes in C.
+
+If we were to, say, print them out, right?
+
+A, B, C, D, E, F.
+
+We'll see that it prints out the new line as a new line character. Occasionally you don't want that. You will have some complicated string with a whole bunch of backslashes in it because, I don't know, you're trying to write a regular expression in Python and they have backslash this and backslash that for it. If that's the case, you can put a little r in front of your string like this.
+
+then the backslashes are as is. So notice that if we ask Python to print out this string prettily it will say oh you have a backslash followed by an in and I better print two backslashes to tell you they'd have you backslash and over here you have two backslashes followed by a gh. And if we print as then we'll see that what we print is exactly what was in that r string. There's other little prefixes like that that can come in front of strings and I encourage you to sort of learn how they work. Any questions on string? What do you suppose happens if we do this? If I type return what's going to happen?
+
+We have an unterminated string literal. So in that sense, single quoted strings are different in Python than they are in the shell or in Emacs for that matter. And that's another difference that you're going to have to keep into account. But sometimes you'll want to have strings with a bunch of new lines in them. And in that case, you can use this following sort of sequence, three apostrophes in a row. That says, I'm going to have a long string here with a bunch of new lines in them.
+
+and don't give me any grief about the new lines. I want those new lines.
+
+So if we type something like this, abcdefghk, and then close it with three apostrophes as well, why is this string, which I could have written just with backslash n and that sort of thing, but sometimes it's much nicer to see the string the way that it would look like when you're going to print it out, and then you can see that string.
+
+and you can use the triple quotes to get that. You can also use triple double quotes. But don't try to mix the two. Either use triple singles or triple double quotes. Don't try to do a single quote, double quote, that sort of thing. Any questions on strings? All right. Now, Python is in some sense an object So every value in Python is an object. Even the simple values that we've talked about like the string, that's an object. Even those integers, they're objects. The integer zero is an object. And it has three things. First, an identity.
+
+The identity, you can think of it as a unique way of identifying the object. You can take any object in the system and say, "What's your identity?" with the ID function. And it'll say, "Oh, well, Y's ID is this funny number." And we can say, "Oh, what's S's ID?" Well, it's this other funny number. One way of thinking about it, if you like, is to think of that as being like an address. It's like taking the address of the object and getting this pointer to the object. But unlike languages like C++, you can't take that identity and actually use it to munch the object later. It's just the name for an object. You can print it out. You can compare it to the identity of some other object to see if you're the same you can do that with identities but you can't turn that identity back into the original object like you can in C++. So in that sense Python is safer than the languages that you learned about in CS31. The second thing that the value has is it has a type. So and you can sort of ask for any object, hey what's What did I do wrong? Oh, I've redefined type at the start of my session. Let's get out of this and start over. I messed up by redefining a standard function. You should not do that at home, all right? So let's try that again. S equals, I don't know, ABC. And you can say type and it says oh well that's your type it's this is a string right you can ask any object hey what's your type for example you can even do this what do you suppose that's going to tell me type of type of the string well the type of a string is a class so the type of a type of a string should be a class that says hey I'm a type What happens if I do it three times? I hope the answer is on the tip of your tongue. It should be the same as before, right? Eventually, we stop iterating and we finally say, we got to type here, guys, right? All right? So you can find out what your identity is with the ID function and you can find out what the type is with the type function, right? So you have ID of an object, you have the type of the object. But there's a third thing that the object has, which is what people mostly think of when they think of the object. And they say, oh, well, it has a value. Okay? And the way you find out the value of an object O is, well, O, that's its value, right? Normally, you think of an object as having a value, and that's sort of the primary thing that most people think about, but I want you to know about those other things as well, because every object has them. There's something else about this triad that's important. Once you have an object in your hand, these things cannot change. Once an object has an identity, and if you later ask the object What's your identity? It will tell you the same number that it told you before. Similarly, an object's type cannot change. If an object is a string and you go look at it later, it's still going to be a string. It's not going to be anything else. However, the value can change if the object is mutable.
+
+The notion of mutability is crucial in Python. Some objects are mutable, others are not. And it's very important to know, whenever you're dealing with an object, which of those two categories it's in. All the objects that I've talked about so far, numbers and strings being it, right, so far, Those objects are all immutable. You cannot change an integer. An integer is always what it is. This can lead to some confusion, right? Because I can write code that looks like this, right? i equals 12, i equals i plus 1, right? i is now 13. Didn't I change that 12 to a 13? No, I didn't. That 12 is still there somewhere inside Python and it still has the value 12. It's just that I no longer refers to that old value, it now refers to a new value called which is the number 13. It's important to get that distinction, right? Because you cannot change the value of an immutable object. Any questions on how that works? Way in back.
+
+What does it mean to which? Oh, when we did something like int of 100, that sort of thing. Right? So we took a value of type string. We gave it to the constructor for the int class. And it gave us an integer. It gave us a new object. It's not this object. This is a string. It gave us an integer, which is going to be a different object. We never changed the string here.
+
+Yes. So variables can change in value, right? But variables are not objects. They're just variables. You've got to keep the distinction between the two very clear in your mind. And that makes Python different from C++.
+
+because in general in C++ every variable is an object. You can take its address. You can see where it is. It's an object. It lives in memory somewhere. Right? That's not true in Python. You cannot take the address of a local variable. It's not an object. It's just a variable. Yes? Good point. Let's try it. So we'll do ID of I now and we'll get that. That's the ID of our 13.
+
+And then let's set i to be i plus 1 and say id of i. i is now 14 and notice it has a different identity. Now let's set i equals i minus 1 and we'll do id of i. And what do we get? It figured out it could reuse that old 13 object and you're using reusing that old 13 again. Yes?
+
+Is that just like a coincidence or is it?
+
+It depends on the Python implementation. CPython will do that as long as the integers are small. If the integers get big, you can't rely on it figuring that out anymore. Yes? That's another good point. Here, ID of i is that. We'll say J equals i. What's the ID of J? It has to be exactly the ID of i. If you assign one variable to another, that means take the value that's in the first variable and copy it into the second variable. Well, every value is an object. You're saying, I want that object to be in the second variable as well as the first variable, but it still has the same identity type and value that it had before. So if you just do i equals j, you're not changing any object, you're just copying a reference to an object from one variable to another. Yes?
+
+There is sometimes a connection between ID and memory addresses. At this level of abstraction, we're not supposed to care. But we could go look at the source code for Python, but it would probably take us 20 minutes to answer your question. My guess is that these objects are not actually in memory address.
+
+all. There's something else. It's using a different technique that we don't have time to go into. Yes? Yes. Variables are not objects, correct. I could try to use a lot of terminology, but I'm going to try to use an analogy instead.
+
+like the registers in your computer. That is, they are little parts of your CPU. They're not in RAM. They're just in your CPU. That's all they are. And think of objects as being little pieces of memory with addresses. Okay? And in that case, when we do a variable assignment, we're copying from one register to another. No object changes in value. It's just that now this register now points to the same piece of memory as that register. That's not exactly What's an example of a new object? Oh, a list. So if we say list of, well say, I don't know, x equals 3, 4, 5, right? And we can say x sub 0 equals 7 or 6, and we say x, now it's 6, 4, 5.
+
+So you can modify lists. In fact lists are perhaps the most popular form of mutable objects. Yes? The simplest the way I can say this is again go back to that that image of variables is just being registers in a CPU and the CPU has a limited number of registers but let's imagine an and then you put the address of the list into your register and so that's the best way of thinking that's what X is right now it's just you know really all that matters here internally is X points to this right it's some address of some piece of memory and if you look inside that memory well we can't because Python keeps it a secret from us but if we could look inside it we would see those three values six four and five right now yes Yes. Well, every value is an object. So in particular, those are objects. Yes.
+
+I guess I have two questions. First off, so just to make sure I understand, when we do ID I or ID K, we're getting the ID of 13, right? The object 13, which is an integral.
+
+We're getting an ID of that object. Yes.
+
+And then my second question, so if we change the list X and we do ID again, we'd still get the same ID, right?
+
+That's right. Let's do that, in fact.
+
+So we'll say x sub 1 equals, I don't know, 14. And id x is the same as it was before, but x has its new value. Absolutely. So you're changing the object's value in place. Yes? If you did like the id of like x of 0 or x of 1, it would still be the same? Let's try that.
+
+If we were doing this in C, the address of an array is the address of its 0th entry. So ID of X sub 0 in C would be like saying ID of X. But that's not true in Python. This gives us the ID of the 0th entry that is the first element of the list, which is going to be something else. Oh, that's a very good question. I like that question. Yes?
+
+or shallow or deep, it doesn't matter. You get a new object and so it will have a different ID. Okay? So in some sense, you know, ID is not something that intro Python courses like to cover. But since you guys are all, you know, haggard C++ veterans and you all know pointers and you know how they work very well, then I think, I hope you can see how ID is sort of like saying I want a pointer to this object that doesn't let me modify the object anymore and doesn't let me actually do anything with the object but I just want to know it anyway right so in some sense it's a crutch for C++ veterans yes the ID belongs to the object and not to the variable Variables do not have IDs. It's only their value, the variable has a value which is an object and that has an ID. Yes? Yes. That's up to Python. Some pythons will give you multiple objects all with the same value, six, right? So they're numerically equal.
+
+but they're different objects with different IDs. Other pythons will not do that. Okay? And I think what CPython does for small integers, it sort of does that and for large integers it doesn't. You shouldn't, whichever it is, you shouldn't rely on it. Yes? If you, yes, if you make the list longer or shorter it should still have the same ID. Yes, it'll be the same list. Yes.
+
+Well, the ID returns an integer, right? And so you have multiple sorts of equality tests in Python, right? You have this.
+
+These are probably the top two equality tests in Python, right? This says look at the values of A and B, right? This says look at the identities of A and B. So this expression is equivalent to saying this, right? It's just that this is going to be faster than that.
+
+is like pointer comparison in C++. So this is like, in C++ you might say something like this versus something like this. So this is roughly that. Here's C++, here's Python. And that's kind of what's going on. A little bit of hand waving here. This isn't exactly what's going on, but it's reasonably close. Question?
+
+Oh, well, let's try that. X sub zero is six. The answer is true. And the answer is also, are you sure you want to do that? Because that query isn't very portable. Because like I said, some pythons will give you different sixes.
+
+Other pythons will only give you one six and will reuse one. You might get a different answer in a different python. And so that's what that warning message is warning you about. Are you sure you know what you're doing? All right, why don't we take a break and we can start up again at, say, I don't know, four past.
+
+What are your thoughts on Leet Code?
+
+On which one? Leet Code. Leet Code problems.
+
+Recode? Leet Code. The thing they use for higher Leet Code.
+
+I'm having trouble hearing you with all of this.
+
+What about Leet Code?
+
+Leet Code? I don't know it.
+
+Let's talk after class.
+
+All right, so one of the reasons for Python's success has been all of the data structures and algorithms that are built into it because the people that designed it didn't want to have to keep teaching CS31 over and over again.
+
+So in some extent, we're about to take a tour through some of the basic data types and built-in operations in Python. And to some extent, the next 30 minutes are going to be a repeat of CS31, except we're going to compress it into, you know, by a factor of, what is that, a factor of 100. All right? So it's okay if we review a little bit, right? So Python has a whole bunch of standard types. And here I'm talking about So you don't need to have any import anything and that sort of thing. This is stuff that are sort of built into the core part of the language. One of the simplest standard types is the type none. Which is just the type of Python's approximation of the null pointer, the none value. It's sort of the default value for everything. There's not much interesting about this of this type since there's only one value of that type. We'll go on to the next major category, which is numbers. I've already briefly walked you through some of the properties of numbers, but just to mention what we have here is int, float, and complex. You can have other numbers other than this, and historically Python has had them, but for now that's probably Good enough. Third major category of standard types are sequences. We've already seen a couple of examples of sequences. This includes strings, lists, and there'll be some others and that sort of thing. But basically the idea of a sequence is It's something that you can iterate through. You can say give me the zeroth element, give me the first element, all that sort of thing. After that, the next major type is going to, a category of types is going to be mappings. The most important built-in mapping type is the dictionary and we'll have more to talk about dictionaries later. Sequences and mappings in some sense are similar because they use similar notation to access their elements. But underneath the covers they work in quite different ways. And so we'll see what some of those different ways are. There's two more major categories. The first of the two are the callables. This category of built-in types are, they act like functions. So in fact some of them are functions.
+
+We have lots of other callables. For example, classes are callables. And methods are callables. There's a whole bunch of other callables. When you interface Python to C++ code, a lot of times the C++ functions turn into callables at the Python level. And then there's another category. I'll call them internals or something like that.
+
+I'm not going to talk about that. So we pretty much have covered everything I want to talk about in terms of none and numbers. What I'd like to talk about next are sequences. And to some extent, instead of telling you all the different kinds of sequences that there are, probably a more important thing to mention is what operations you can do on sequences.
+
+of sequences do. So here we go. Sequence operations. The sort of most basic one, if you have a sequence S that's an object, a sequence object, is to say, please give me the ith element of S. This is the subscripting operation. And you're used to it. You've seen it from C++ and all that sort of thing. However, it doesn't work exactly the same.
+
+as it might work in some other languages for two main reasons. First off, if we assume S is like this, and here's S sub 0, here's S sub 1, S sub 2, all the way up through S sub n minus 1, where the length of the sequence is n, then if you say sort of S sub, I don't know, n, I don't know, 2n, That's going to be a subscript error, right? Because you're going way past the end of the sequence. In C++, if you have a subscript error, your program keeps marching merrily ahead and gives you completely bogus answers from there on out. It's called undefined behavior. The system can do whatever it wants. In Python, if you have a subscript error, it will throw an exception. This is an error.
+
+This is caught. We have subscript checking.
+
+This originally came because Python was a teaching language and they didn't want it to have sharp edges like C++ has.
+
+But it's, you know, very nice to have even nowadays when we mostly use Python to run machine learning models.
+
+The second thing I wanted to mention though is that Python has a special notation for indexing from the end of the array. So there's another way to number these entries from minus 1, minus 2, minus 3, all the way down to minus n. So the minus nth entry of the array is the same as the zeroth entry. The 1 minus nth entry of the array is the same as the first entry, and so forth and so on. So if you say s sub minus 1, That's not a subscript error, unless s is the empty sequence. Then it is an error. But if s is not empty, s of minus one will give you the last entry in the array. This idea of using negative values as indexes goes all throughout Python. So this sort of thing is valid if i is in the range minus length of s up through but not including the length of those. That's the constraint on what I's value can have for this to be valid without throwing an exception. Question?
+
+Are sequences like lists and like subsequent addresses in memory? Sequences themselves, so when you say addresses in memory you're talking about IDs, right?
+
+So a sequence is an object and therefore it has an ID. Every value in the sequence is going to be an object and will have its own ID but you can think of these guys as all pointing here and you know here. When you ask what's the ID of this guy, they'll say oh well I'll figure out what the you know the ID of this object is. It's an object with an ID. So it's not at all the same model as C or C++ where each entry and array has an address and the address of the zeroth entry is the address of the array, that's not at all how it works here. Okay, other questions about S sub i? All right, next thing is you can say something that looks like this. This says, please give me a sub sequence of the original sequence. And the idea here is that I, maybe addresses this guy, J maybe addresses this guy. You want everybody starting from I and going up to but not including J and you want that particular subsequence. So the length of this will be J minus I, assuming I and J are non-negative. See how that works? But also notice that the is a different object from the original sequence. We're not talking about the same object. All the members of this sequence are the same objects as the original sequences. But in some sense, if you're thinking in terms of C or C++, we've made a copy of that part of our sequence. We've created a new sequence that looks like just that small part of the original sequence. All right. If I equals J, This gives you the empty sequence, which is perfectly reasonable. If i is greater than j, it's an error. It's like a subscript error. Again, assuming i and j are non-negative. You can also do something that looks like this. That's equivalent to saying this. That is, this gives you everything from the ith element on up. And you can do this, which is equivalent to this. That means give me everything in the sequence up to but not including the jth element. And you can also do this. What do you suppose this does?
+
+Gives you the whole thing, right? The whole sequence except, of course, it's a copy of the original sequence. It's not, you know, its ID will be different from the ID of S. All right? So there's some sequence operators, but we have some more. One I've already mentioned. The length operator, when applied to a sequence, tells you how many items there is in the sequence. That's pretty straightforward. You also have these operators. The min operator tells you the smallest item in a sequence and the max operator tells you the largest. What sort of trouble can you run into with min and max? Yes? Oh, well, yes, we already made a mistake like that. I'm thinking of something involving the operation, not its Yes? Sometimes min or max is not defined for a different type. Oh, that's also true. But I was thinking of this one. Right? You can't take the minimum of the empty sequence. There's nothing to be minimum of. But you're right. Suppose you have a list of, I don't know, blussel-blussels, right? You don't know how to compare them. And you'll get an error in that case as well. Or if you try to take the minimum of a sequence where the types are all mixed up, you know, some some strings, some ints, all that sort of thing. A list doesn't have to be homogeneous. It can be heterogeneous. And in that case, min is going to fail as well. Other questions, comments? Or did I just answer them? Yes. Oh, sure. Right. So you can say, you know, what sequence do we have here? Is S a sequence? Right. So you can say, oh, strings are sequences, right? So you can say S sub, up through minus 1, right? And that gives you AB, right? It's everything up to, but not including, the last element of the sequence. All right? Questions on these operators? Do I have anything more? Oh, and we've already, I've already used this, but I'll mention it again. You can take any sequence and convert it to a list. You'll get a new list whose members are exactly the members of the original sequence.
+
+This can be handy because lists are mutable, but many sequences are not. In particular, strings are immutable. So if I tried to say something that looks like this, S sub 0 equals 5, it'll say you can't assign to a part of a string. But if I say T equals list of S, where T is now a list of all the characters in the original string. I can say t sub zero equals five and that's going to work. Question? A list is a sequence. Yes, there are operations that will convert lists of strings, a list of characters back to strings. I never use them and don't offhand remember how they were. We could try it. I don't know.
+
+Suppose we do something like this. T sub zero equals x. So now t is a list of characters and stir of t. Is this going to work? No, it didn't work. It's some other operation. I've forgotten what it is. Other comments. Yes. Can I do a min and max of a...
+
+What would the key for a min function be? The least, well I mean you can apply min to strings right? So min of t is going to be b but that's not the question you're asking. You're asking? Well you can certainly walk through the elements of a sequence right?
+
+You can say something like this, 4i in t, right? Print i, right? And then you can do whatever you like in the body of the loop, that sort of thing. So you can iterate through sequences very easily. Yes? Can a subseqlents go backwards, like from like, if you have like s of negative one to negative one? No, see the problem is that the indexes, if they're negative, are treated as actually being positive after you add the length of the list, right?
+
+So if you specify a sequence where the start is after the end, that's going to be like a subscript error. Question? Louder please. Can we have an for INT but please go backwards, that sort of thing? Yes.
+
+If you go for example from index 0 to 5, so it would be like i over j and another.
+
+Oh yeah, you can specify a step that's non-zero and all that sort of thing. You can do stuff like that, right? So you can go upwards and then you can specify a negative step and go backwards, yes. But to be honest, I hardly ever do that because once I start doing that, I'm back in the C++ and whenever I find myself doing that I'm thinking you know I'm really in the wrong world here if I'm writing this kind of code I should write it in C++ and then link it to Python but that maybe that's just me all right all right let's see what else we can do some sequences are mutable not all but some lists for example are mutable. Mutable sequences let you do this sort of thing. You can assign to the ith element of a mutable sequence, in which case it just makes that ith element be the object V or the value V rather than what the old value used to be. You can also use this notation to do assignments.
+
+So you can do something like this.
+
+In this case, V had better be a sequence.
+
+So maybe I should call this, I don't know, S1 or something.
+
+And what happens here is the following.
+
+Here is the original S that starts at I and goes up through but not including J. This part of the sequence goes away and is replaced by the contents of this sequence. That may make our new sequence longer than the original or shorter.
+
+So basically S1 gets copied into here and then these these guys just are the same place where they were before. What that means is that S can grow or shrink or maybe stay the same size as the original. The length of the resulting sequence is the length of the original sequence plus the length of S1 plus J minus I. No, minus J minus I. Plus I minus J, right? Question?
+
+Is memory reallocated to do this? Oh yes, absolutely. If these sequences are large, this might take a while. You've got to do a lot of copying. Other questions? Yes. Yeah. Other question? Yes. Strings are immutable. Oh yeah, but you can do this to a list. Absolutely. Right? And All of these shorthands that I talked about here, where you can omit i or j or both of them, they also work here. Right? If you omit i, it defaults to zero. If you omit j, it defaults to the length of the sequence and you can omit both if you like. Okay, any questions about mutable sequence operations? There's one other one I should mention.
+
+which is you can do this.
+
+What this does is it destroys that slot in the sequence.
+
+It doesn't destroy the object that's in the slot. That object's still there.
+
+But the sequence becomes one shorter than it used to.
+
+This decreases the length of the sequence by one.
+
+So, in effect, you take the sequence that looks like this, you get rid of this slot, you come up with a sequence that's one shorter, and in which this is here, and this is here. And now you can probably see how del of SI colon J works. Works exactly the same way, except now this region that's destroyed can be as large or as small as you like. Yes? Can we compare two sequences? You can use equals equals and it'll compare them element by element. Yes? Can you then add elements and if so, would you only add them at the end or can you add them at the end? Well, you can add elements this way, right? This lets you grow the sequence, right? So yeah, you can sort of add and make the sequence longer or shorter in kind of any way that you like. It may not be super efficient but it will work yes what exactly is which I'm having trouble with the helicopters and stuff you got to be louder oh well it's an it's a built-in operator in Python it's not a function and it operates by you know a side effect on this mutable sequence. The thing, the operand of del has to be a mutable sequence. Or there's some other things you can del as well. But for now, it has to be a mutable sequence, you know, and with an index like that. And in some sense, you know, you can't sort of say del of any expression, right? The thing that after the del here has to, you know, have, use a syntax that's like this. Question?
+
+Yes.
+
+Sure. Assign them somewhere else before you delete them from the sequence, right? And then you'll still have, in fact, that's very common. You, you, you yank something out of a sequence, you delete it from the sequence, but you still have a local variable referring to the object and then process it there. That's very common. Yes.
+
+No. You mutate a mutable object, it's still the same object, its ID does not change. And its type doesn't change either. You can't, for example, take an object that's a string and say, I want you to be a list. It's not allowed. You can create a new object that's a list that has the same contents as the string, but the original object always has to be a string or a list or whatever it was originally. Okay, other questions about these operations? Okay.
+
+So this applies to mutable sequences. The most common type of mutable sequences are lists. Right? So we started off talking about any sequence, then mutable sequences, then lists. Lists are, you know, built into the language. They're very commonly used and all that sort of thing. Lists have some extra things that you can do with them that you can't do with arbitrary mutable sequences.
+
+And here's one. Here I'm assuming S is a list. You can call S.append of V. This grows the list by one and V specifies the object that will be placed at the very end of the newly grown list. All right? So if I were to draw a picture, it's relatively simple. All right? Here's our list.
+
+list S before afterwards S looks like this with V sitting here. Now in some sense this isn't new. You can do this with the operations I've already given you. This doesn't gain you any more power over lists than you already have. Because what you could have done is say something like this.
+
+from len of s colon equals v. Those two things mean the same thing. Please grow that list by one and v specifies the value of the new thing at the end of the list. However, append is going to be faster. The reason this is put in this way, partly also it's easier to read, but partly it's faster than this operation.
+
+And that performance thing is probably worth going into a little bit of detail because I want you to see how lists are fast when they're fast and also when they're slow, why they're slow. Yes, question. How is what? Well, this means start at the length of S and go up to the length of S, right? So this specifies an empty sequence.
+
+We're replacing the empty sequence at the end of S with a sequence of length one, right? So that grows S by one by appending V to its end. No one would ever write this code, by the way. If I ever saw this code, I'd say, what in the world are you doing? You should have called append. But at least you could write it this way, I guess, if you really wanted to. Yes? So if I did with, you mean, If I did it this way? Without the brackets? Oh, so instead of assigning to it, oh, this, if I were just to evaluate this as an expression, I'd get an empty list, right? Because that's like saying, you know, starting from five and going up to but not including five. You know, any sequence, this will just give you the empty sequence. And that's all that this this would mean if we weren't assigning to it. But the fact that we're assigning to it means that this sort of idea happens. It's just that when we start off the sequence is empty and then it grows and becomes length one. Yes? Oh yeah. This will let you know. We could do this and it would grow by length two all in one go. Whereas append always grows by exactly one. Yes?
+
+What's the range of len s?
+
+No, is that not like outside the house?
+
+Oh yeah, but it's the usual C thing, right?
+
+That is, if you have an array with n items, then, you know, they're numbered 0 through n minus 1.
+
+This means start at the very, just past the end of the array and give me that sequence that's starting there, right? Yes?
+
+Oh my, oh my. Well, I mean, maybe you're right. Let's try it, right? X equals A, B, C, D, E, right? X of 5 colon 5, right? You get the empty string. I'm right. I lucked out, right? No, the point is that just Just like in C++ you can do stuff like this in C++, right? "CARE C200, CAR*P equals the address of C200." This is allowed. You can always take the address in C or C++ of one past the end of the array. What you cannot do later is something like this.
+
+That's not allowed. This is the valid address. It points just past the end of the array. You can use it at address arithmetic. You can do this later. That's allowed. But you can't, so it's the index of just past the end of the array. And similarly here, if S is of length 5, this is the index of just one past the end of the array. And as long as you don't try to actually see what's there, you're fine.
+
+Just one, yes. Right? If you go two, then watch out. All right? Other comments? Yes? What's that? Oh, I love it when people try to get me into trouble.
+
+I did not expect this. I mean in some sense it's correct because it's saying give me everything in that list starting with just past the end of the list and going on to be much greater but in some sense that's bogus. That's totally, I don't like that at all. So now of course I want to try some more stuff. What happens if you do this?
+
+So what, it only looks at the first subscript and then it decides no matter what I put it, after that it's fine, I guess. All right, so this one's new. Luckily I don't write code like this, but yes? No, I mean if I say x of 2 times 5 plus 3, right? That's not going to work, it's out of range. So no, there's this, it looks like it's a special rule If you're saying start at the very end of the list and then keep going, it'll say, well, it's going to be empty no matter how far you go. And to my mind, that's bogus, but I guess they did. So maybe actually now that I think about it, if you do something like this, you think it'll like it? It does. It should be a subscript error, but okay, I wasn't there in the committee meeting when they designed this. Yes?
+
+I think it just works as long as we write some subscripts notation.
+
+Any subscripts will work?
+
+Yeah.
+
+Wait.
+
+So only the first one matters?
+
+The second one can be anything?
+
+This is just totally bogus.
+
+I do not like this at all. Well, I mean, this is sort of like saying, if you have a subscript error, just use the nearest index in range. I can imagine a programming language doing that so that my fragile ego isn't harmed by running a bad program, but no, I'd rather have it throw an exception. So maybe I'll write to the developers of Python or go submit a bug report or something. All right. Anyhow, Now, to get back to a pen, there's an important performance thing going on here, which is that this is fast. This might not be, but this is going to be fast. And intuitively, that sounds a little weird because, you know, what's going to happen here, you know, if you were writing this code in some, you know, sort of standard, well, you You've got to go allocate another array that's one bigger, copy all the stuff from the smaller one to the bigger one and then say okay now I'll let s point to the bigger one. And so intuitively you would think that this operation, the efficiency would be order len of s. Right? Which means that if you have a program that's constantly appending to a list, Then, and it does that n times, then the cost of running a program is order n squared. Right? Because you do it n times, each time it's the order the length of the list, so you, you know, the cost at first is one, then two, then three, then four, and you get the nth triangle number, and I'm sure you all remember the nth triangle number from algebra, right? You thought that was just something you had to learn to pass some exam, but it's actually important in computer science.
+
+All right, so it seems like this is going to be slow, but I'm going to tell you now it's not as slow as it looks. If you run append n times, the cost of your entire computation is going to be order n. All right, so the cost of n appends is order n.
+
+And that's a big deal. Going from order n squared down to order n is like, wow, that's really nice to have, right? Yes? Yeah. The ID will, yes, when you do any of these operations here, the ID of the sequence will stay the same. Oh, well, yeah, how does that do that? I mean, I've been writing S is this way. What's really going on is there's a little piece of storage here that points to the actual storage and you can get the address of this. Internally it's implemented that way. All right, so there's a little header that says I'm a string or I'm a sequence or I'm a list I should say and here's where the list actually is and you just hand out the idea of the header. That way you can reallocate the list and you're fine. All right, so how can we do this? How can we make the cost of N appends to the list Order N. Another way of putting it, if you take the algorithms course, which I hope you all will eventually, is the cost of a single append is Order 1 amortized. All right? That's not as good as Order 1.
+
+Order 1 means every time you call append, you will take a fixed amount of machine time to do it. Some number you can go compute it, maybe it's 100 nanoseconds or something. Some machines will be slower, some will be faster, but there'll be a fixed amount of time. That's not what Python does. What it does is it tells you this, which means on average the cost of appending is Order 1, but sometimes it's going to be greater.
+
+And how does it do that? As follows. It starts off with a small list. When you keep appending to it, it then doubles the size of the list. If you keep appending to it after that, it doubles the size of the list again, and so forth and so on. So the way the list actually is implemented is something that looks like this. There's a pointer to a bunch of memory. Some of it is unused.
+
+And so this header here has to both tell you how much what the current length is, but it also has to tell you how many cells are allocated in the list. This allocated number is greater than or equal to the length. And ordinarily, when you do append, all it does is it says, "Okay, we'll put V here. We'll grow the length by one. Done." So ordinarily, append is really fast.
+
+set two slots in memory done. You don't need to reallocate. However, as I'm sure you realize, eventually this thing fills up. When it fills up, you reallocate all the storage. You copy all these old values into the new storage. You now have a new array that's twice as big as it was before. Half of it's unused. The other half is used. You take the original array. You get it.
+
+you take the header you point to here and then you grow the link by one the same way you did before but you've now multiplied the allocated number by two. Question? Yes, because if you're thinking in C mode the ID is maybe the address of this piece of storage or it could be that there's a separate field here called the ID whichever. All right, so you can see that usually "append" is really fast. Occasionally "append" is order "n". Now, can you prove this statement? The cost of doing "n" appends so the array keeps growing by a factor of two each time you run out of memory. Is the cost of building this array going to be B, order N. And I'll hope you see why the answer is yes. So here's how we can see that. Suppose this array is completely full, so there are no unused entries in it. For this second half of the array, the cost of adding all of these guys is just one store instruction, right? So the total cost of building this part of the array is one.
+
+times n over 2, where n is the total length of the array. Right? It cost us n over 2 store instructions here. Now this guy, the second fourth, is going to be more expensive. Why? Because we had to store them here, and then we had to copy them over here and store them again. So this is double the cost, but it's only n over 4.
+
+And you can probably see where we're headed. This one is going to be triple the cost, right? So it's 3 times n over 8. And here's 4 times n over 16 plus all that sort of thing. What does this number equal? 2n. Very good. You did that in your head? I'm very impressed.
+
+So 2n is still order n, right? Any constant times n is still order n. And that's why we have append the way it is. In order to make sort of doing stuff with lists fast. You'll see a lot of append n's in programs that sort of build lists. Any questions on the efficiency issues here? All right. Let's do a few more list operations.
+
+You can say s.extend s1.
+
+This is like append, except append only appends one object to a sequence, to a list I should say.
+
+Extend says here's a subsequence, make our original sequence longer by this length and plop these guys at the end.
+
+Right, so in effect it's a batch append.
+
+All right? Again, you can write this with this notation, except extend is going to be faster probably and also perhaps easier to read. You can do something like this. This counts the number of objects in S that are equal to V and returns the count that it found. All right.
+
+You can do this.
+
+This searches through S for the first object that's equal to V and gives you the index of that object.
+
+Right?
+
+Or if it's not found, it throws an exception, a value error.
+
+This insert function modifies s by inserting v in front of the ith entry.
+
+So in some sense append is just a special case of inserting just before the length of s.
+
+But this will let you insert anywhere in the list.
+
+And again you can write it this way but this is going to be faster and maybe easier to read.
+
+The pop function is the inverse of the insert function. Insert makes the list a little bit longer by growing it at location i. Pop makes the list a little bit shorter by deleting the i-th element and also this returns the value that it deleted.
+
+The most popular place to pop is the end of the list and there's a shorter version of pop that does that. Right? The default value for i is minus one. Right? Delete the last entry in the list and then give me its value. Why is this operation called pop?
+
+Because it's popping a stack, right? A list is just a stack. The end of the list is the top of the stack. This says remove the top entry in the stack and give me its value and make the stack a little bit shorter than it used to be. Where's the push operation? Yeah, this should really be called push if you ask me, but they decided to call it append.
+
+All right, let's do a couple more.
+
+If S is a list, S dot sort does what?
+
+Excellent! You don't need to learn heap sort or merge sort or bubble sort or anything like that.
+
+It's all built into the system. Done, right?
+
+You can look in the source code to Python to see which algorithm it uses. Yes?
+
+Is it stable or unstable?
+
+I don't know I'd have to look it up I would guess it's stable but I'd have to double check yes louder please does it sort by which it yeah this modifies s it's an in place sort is it it it's like it's like if you use min of s it uses It uses less than operations on elements. It uses the same set of operations. And the, you know, what those operation means is going to be up to the objects in question. And we can talk about that more next time.
+
