@@ -1,0 +1,379 @@
+# Comprehensive Notes: Understanding Client-Server Computing, Node.js, and Event-Driven Programming
+
+---
+
+## Table of Contents
+
+1. Introduction
+2. Client-Server Architecture
+   - Overview
+   - Client-Server Communication
+   - Data Responsibility
+   - Real-world Example: Course Enrollment
+   - Multiple Clients, Server Mediator Model
+   - Issues in Client-Server Systems
+3. Event-Driven Programming
+   - Definition
+   - Key Concepts
+   - Asynchronous vs Synchronous Execution
+   - Event Loop Explained
+   - Event Handlers
+   - Rules and Best Practices
+   - Comparing to Multi-threading
+   - Use Cases and Systems Using Event-Driven Architecture
+4. Introduction to Node.js
+   - Overview
+   - Key Features
+   - Node.js as JavaScript Runtime
+   - Asynchronous Event Handling with Node
+5. Writing a Basic Node.js Web Server
+   - Source Code Overview
+   - Code Explanation
+   - Modules and Variables
+   - Creating HTTP Server
+   - Defining the Callback (Event Handler)
+   - Listening on an IP and Port
+   - Running the Example
+6. Distributed Computing Models
+   - Client-Server
+   - Peer-to-Peer
+   - Primary-Secondary (Master-Worker)
+   - Comparison Table
+7. Distributed Systems Challenges
+   - Performance Problems
+     - Throughput
+     - Latency
+     - Caching Strategies
+   - Correctness Problems
+     - Event Order (Serialization)
+     - Cache Validation and Staleness Management
+8. Deep Dive: Legacy Network Technology
+   - Circuit Switching
+   - Why It Was Replaced
+9. Packet Switching
+   - Overview
+   - Resilience and Efficiency
+   - Routing and Re-routing
+
+---
+
+## 1. Introduction
+
+This lecture covers foundational topics from distributed computing, specifically:
+- Client-server models
+- Introduction to Node.js
+- Event-driven programming
+- Performance and reliability concerns in networked systems
+- Comparative discussion of different distributed computing architectures
+
+---
+
+## 2. Client-Server Architecture
+
+### Overview
+
+A client-server model is a fundamental pattern in distributed systems where:
+
+- A server hosts resources or services (e.g., databases)
+- A client requests access to those services
+
+> Classic computing involves one program on one computer. Now we evolve to two programs exchanging information.
+
+### Client-Server Communication
+
+- Runs on a network
+- Typically modeled visually with clients and servers connected via a line or “cloud”
+- The application logic is shared between client and server
+
+### Data Responsibility
+
+- Server: stores persistent and important state
+- Client: holds minimal or non-persistent data
+
+Example:
+> The Registrar’s database (server) hosts course enrollment information. The student’s laptop (client) just sends a request.
+
+### Real-world Example: Course Enrollment
+
+- Students attempt to enroll in a class via a client (browser)
+- The server determines whether a student is successfully enrolled
+- Only servers possess the true, authoritative state
+
+### Multiple Clients, Server Mediator Model
+
+- Many clients can exist simultaneously
+- Clients communicate only with the server, not directly with each other
+- Race conditions can occur (e.g., two clients attempt to enroll at the same time)
+
+Server resolves such conflicts by:
+- Picking a winner
+- Rejecting both (error)
+- Or mistakenly accepting both (undesired)
+
+---
+
+## 3. Event-Driven Programming
+
+### Definition
+
+A programming paradigm where the flow of execution is determined by events like:
+
+- User interactions
+- Network responses
+- External signals
+
+> “Events arrive, and code is run in response.”
+
+### Key Concepts
+
+| Synchronous Program | Event-Driven Program |
+|---------------------|----------------------|
+| Linear execution    | Loops + Handlers     |
+| Blocking I/O        | Non-blocking I/O     |
+
+### Event Loop Explained
+
+A core concept underpinning environments like Node:
+
+```javascript
+while (true) {
+  event = getNextEvent();
+  handleEvent(event);
+}
+```
+
+### Constraints of Event Handlers
+
+- Should be FAST (e.g., microseconds to a few milliseconds)
+- Avoid blocking functions (e.g., file.read(), network.read())
+
+Blocking I/O causes:
+- Delay in serving new requests
+- Queued inputs
+- Unresponsive systems
+
+Example of bad event handler:
+```javascript
+function handleEvent() {
+  const result = readBigFileSync(); // This blocks - BAD!
+}
+```
+
+### Proper Strategy
+
+- Split long tasks into short, fast handlers
+- Schedule continuation via next event trigger
+
+Good Example:
+```javascript
+function trainModelPart1() {
+  // Quick computation
+  scheduleEvent(trainModelPart2);
+}
+```
+
+### Multi-threading vs Event-Driven
+
+| Multi-threading                      | Event-Driven                       |
+|-------------------------------------|------------------------------------|
+| True parallelism via multiple cores | Simulated concurrency (1 thread)   |
+| Requires locks (mutexes)            | No locks needed                    |
+| Risk of race conditions             | Deterministic handler execution    |
+| Harder to debug (non-determinism)   | Simpler error tracing              |
+
+---
+
+## 4. Introduction to Node.js
+
+### Overview
+
+- JavaScript runtime for event-driven applications
+- Runs JavaScript outside the browser (e.g., on servers)
+- Allows asynchronous I/O using callbacks/event loop
+- Built on Chrome's V8 JavaScript engine
+
+### Core Feature
+
+- Non-blocking I/O model
+- Particularly good for handling high concurrency
+
+> “Node is for web servers that juggle many clients.”
+
+---
+
+## 5. Writing a Basic Node.js Web Server
+
+### Source Code
+
+```javascript
+const http = require('http');
+const ip = '127.0.0.1';
+const port = 3000;
+
+const server = http.createServer((req, res) => {
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/plain');
+  res.end('Hello CS35L World\n');
+});
+
+server.listen(port, ip, () => {
+  console.log(`Server running at http://${ip}:${port}/`);
+});
+```
+
+### Explanation
+
+| Line | Purpose                                           |
+|------|---------------------------------------------------|
+| 1    | Load built-in HTTP module                         |
+| 2–3  | Define IP and port (local only, for testing)      |
+| 5    | Create HTTP server with request-response callback |
+| 6–8  | Respond with 200 OK and plain text body           |
+| 10   | Server begins listening; log when ready           |
+
+### Running the Example
+
+- Save as `app.js`
+- Run in terminal:
+  ```bash
+  node app.js
+  ```
+- Access in browser:
+  ```
+  http://127.0.0.1:3000
+  ```
+
+Request -> Server -> Response:
+- Always returns same "Hello CS35L World\n" text
+
+---
+
+## 6. Distributed Computing Models
+
+| Model            | Description                                      | Example Use Case          |
+|------------------|--------------------------------------------------|----------------------------|
+| Client-Server    | Centralized server, many clients                 | Websites, REST APIs        |
+| Peer-to-Peer     | All nodes are both client and server             | BitTorrent, Skype          |
+| Primary-Secondary| Workers execute tasks assigned by a “master”     | Parallel ML training       |
+
+---
+
+## 7. Distributed Systems Challenges
+
+### A. Performance Problems
+
+#### Throughput
+- Number of operations per second
+- Optimization methods:
+  - Handle events out-of-order
+  - Prioritize cached contents
+  - Balance workload
+
+#### Latency
+- Time between request and response
+- Optimization methods:
+  - Cache on client
+  - Use faster protocols
+  - Reduce payload sizes
+
+##### Latency Mitigation: Browser Cache Example
+
+- Caches previously fetched results
+- Avoids round trips to server
+
+### B. Correctness Problems
+
+#### Serialization
+
+- Ensure multiple events result in consistent output
+- Even if order of execution differs
+- Software must be able to "simulate" serial logic
+
+Example:
+- A1, A2, A3 all executed
+- But state = simulated output of serialized order: A3 → A2 → A1
+
+#### Cache Staleness
+
+Solutions:
+1. Validate cache by comparing server state identifier (UUID)
+2. Accept that cache is stale, if app can tolerate (e.g., video games)
+
+Example:
+
+| Condition                   | Strategy                    |
+|----------------------------|-----------------------------|
+| Cache critical              | Validate with server        |
+| Cache negligible (e.g., news)| Ignore freshness slightly |
+
+---
+
+## 8. Deep Dive: Legacy Network Technology
+
+### Circuit Switching Model
+
+- Each call reserves a physical wire path
+- Guaranteed bandwidth
+- Efficient for long stable conversations
+
+Diagram:
+
+```
+Phone A → Central Office → [Switch Network] → Central Office B → Phone B
+```
+
+Problems:
+- Inefficient
+- Poor scalability
+- Prone to failure if any intermediate node fails
+- Motivated by Cold War defense needs
+
+---
+
+## 9. Packet Switching (Modern Networks)
+
+### Overview
+
+- Data split into multiple small packets
+- Each packet routed independently
+- Example: Internet protocols (TCP/IP)
+
+Advantages:
+- More resilient
+- Uses bandwidth efficiently
+- Allows for re-routing around network failures
+
+Key Terminology:
+
+| Term     | Explanation                     |
+|----------|---------------------------------|
+| Packet   | A bundle of data (≤1500 bytes)  |
+| Router   | Device routing packets          |
+| IP       | Internet Protocol               |
+| Hop      | Transition to next router       |
+
+Routing independence: Each packet can take a different path, allowing flexible and dynamic routing.
+
+---
+
+## Conclusion & Key Takeaways
+
+- Event-driven programming requires different thinking – design has to focus on performance AND correctness
+- Node.js makes it easy to write scalable, single-threaded network apps
+- Client-server is the dominant model, but alternatives should be considered
+- Performance tuning (latency and throughput) involves caching, async logic, or distributing load
+- Older models like circuit-switching help understand today’s infrastructure evolution
+
+---
+
+## Appendix: Requests and Status Codes Table
+
+| Code | Meaning               |
+|------|------------------------|
+| 200  | OK                     |
+| 404  | Not Found              |
+| 500  | Internal Server Error  |
+
+---
+
+End of Notes.
