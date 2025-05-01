@@ -256,6 +256,7 @@ s[:]         # copy entire list
 ```
 
 ### 11.4 Common Sequence Ops
+
 | Operation       | Description                       |
 |----------------|-----------------------------------|
 | `len(s)`       | Number of elements                |
