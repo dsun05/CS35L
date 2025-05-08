@@ -1,0 +1,28 @@
+I ran the command 'git branch -v -a' on both repositories and found that Eggert has one more active local branch (maint) than me (just master). I also notice that the output for eggert says:
+
+  maint                 f93ff170b9 Git 2.48.1
+* master                388218fac7 The ninth batch
+  remotes/origin/HEAD   -> origin/master
+  remotes/origin/jch    515fd3a3b8 Merge branch 'bc/ancient-ci' into jch
+  remotes/origin/maint  f93ff170b9 Git 2.48.1
+  remotes/origin/master 388218fac7 The ninth batch
+  remotes/origin/next   d13b5baf06 Merge branch 'bc/contrib-thunderbird-patch-inline-fix' into next
+  remotes/origin/seen   5ffff88925 Merge branch 'sj/ref-consistency-checks-more' into seen
+  remotes/origin/todo   15c6383f80 What's cooking (2025/02 #03)
+
+So, maint is a copy of Git version 2.48.1, and master's last commit was "The ninth batch".  Running 'git-show 388218fac7' tells me that this commit was pushed on Mon Feb 10, 2025.
+
+My local repo has this output:
+
+* master                6f84262c44 The eleventh batch
+  remotes/origin/HEAD   -> origin/master
+  remotes/origin/jch    515fd3a3b8 Merge branch 'bc/ancient-ci' into jch
+  remotes/origin/maint  d50a5e8939 CI updates
+  remotes/origin/master 6f84262c44 The eleventh batch
+  remotes/origin/next   629a3ecd64 Merge branch 'kj/glob-path-with-special-char' into next
+  remotes/origin/seen   71cfd25022 Merge branch 'ps/object-store' into seen
+  remotes/origin/todo   c7878a9fa5 Meta/CannedResponses: typofix
+
+I notice that I do not have an active local branch named maint, and that my master branch's last commit was "The eleventh batch." Running 'git-show 6f84262c44' tells me that this commit was pushed on Mon May 5, 2025.
+
+TLDR: Eggert is running on a 3 month old version of git, and has a copy of Git version 2.48.1 in a local branch "maint," whereas I do not. 

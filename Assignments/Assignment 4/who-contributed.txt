@@ -1,0 +1,23 @@
+First, I searched for the the commit that first introduced the phrase "Even newspaper..." with the command: 'git log -S"Even newspaper reports present contradictory information." --all --reverse -p'
+I used -S to search for commits which add/remove the string, --all to check all branches, -p to see the patch/changes for the commit, and --reverse to see the changes in reverse chronological order (oldest first). From this, I found one result:
+
+commit c12b432741eed9a422fbf99fa27af6e7a941d88b
+Author: Arthur David Olson <ado@elsie>
+Date:   Thu Dec 21 11:43:42 1995 -0500
+
+    Eggert changes
+
+    SCCS-file: northamerica
+    SCCS-SID: 7.20
+
+diff --git a/northamerica b/northamerica
+index 92b55af3..9b8a5ec8 100644
+--- a/northamerica
++++ b/northamerica
+@@ -14,25 +14,24 @@
+
+Then, ran the command: 'git blame -L "/Even newspaper reports/,+1" northamerica' to find out whe and who last modified the line containing the phrase in question and got:
+
+c8f960ec7 (Paul Eggert 2013-09-02 08:09:06 -0700 883) # and wrote "Even newspaper reports present contradictory information."
+
+So, I can say that the line originated in the tzdb files in 1995 from Arthur David Olson, while the latest change was by Paul Eggert in 2013. 

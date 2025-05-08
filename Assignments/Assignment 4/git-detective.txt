@@ -1,0 +1,115 @@
+First, I searched the git log for any mention of "merge result tree object" using the command: git log --grep='merge result tree object' and got the output:
+
+commit bcf22f29df87f25582de0ac9274d1567fa16be6f
+Merge: 7f8a6caee5 92481d1b26
+Author: Junio C Hamano <gitster@pobox.com>
+Date:   Tue Oct 25 17:11:34 2022 -0700
+
+    Merge branch 'js/merge-ort-in-read-only-repo' into maint-2.38
+    
+    In read-only repositories, "git merge-tree" tried to come up with a
+    merge result tree object, which it failed (which is not wrong) and
+    led to a segfault (which is bad), which has been corrected.
+    
+    * js/merge-ort-in-read-only-repo:
+      merge-ort: return early when failing to write a blob
+      merge-ort: fix segmentation fault in read-only repositories
+
+commit 19118cb8570e499e1a56e81740cee3d1c1206b44
+Merge: a215853545 92481d1b26
+Author: Junio C Hamano <gitster@pobox.com>
+Date:   Mon Oct 10 10:08:43 2022 -0700
+
+    Merge branch 'js/merge-ort-in-read-only-repo'
+    
+    In read-only repositories, "git merge-tree" tried to come up with a
+    merge result tree object, which it failed (which is not wrong) and
+    led to a segfault (which is bad), which has been corrected.
+    
+    * js/merge-ort-in-read-only-repo:
+      merge-ort: return early when failing to write a blob
+      merge-ort: fix segmentation fault in read-only repositories
+
+
+These two commits are administrative (merge branching), but clearly reference two other commits related to this issue with their commit titles. I searched for these commits with: 
+
+1. git log --grep='merge-ort: return early when failing to write a blob'
+2. git log --grep='merge-ort: fix segmentation fault in read-only repositories'
+
+After running the first command, I noticed that the output had 3 seperate commits, the two administrative commits I found before, and then the original commit. Here is the output for the original commit which includes the commit id, code changes, and author:
+
+commit 92481d1b26ab57525f5efe01d01c7a3d337b8df7
+Author: Johannes Schindelin <Johannes.Schindelin@gmx.de>
+Date:   Wed Sep 28 07:29:22 2022 +0000
+
+    merge-ort: return early when failing to write a blob
+    
+    In the previous commit, we fixed a segmentation fault when a tree object
+    could not be written.
+    
+    However, before the tree object is written, `merge-ort` wants to write
+    out a blob object (except in cases where the merge results in a blob
+    that already exists in the database). And this can fail, too, but we
+    ignore that write failure so far.
+    
+    Let's pay close attention and error out early if the blob could not be
+    written. This reduces the error output of t4301.25 ("merge-ort fails
+    gracefully in a read-only repository") from:
+    
+            error: insufficient permission for adding an object to repository database ./objects
+            error: error: Unable to add numbers to database
+            error: insufficient permission for adding an object to repository database ./objects
+            error: error: Unable to add greeting to database
+            error: insufficient permission for adding an object to repository database ./objects
+            fatal: failure to merge
+    
+    to:
+    
+            error: insufficient permission for adding an object to repository database ./objects
+            error: error: Unable to add numbers to database
+            fatal: failure to merge
+    
+    This is _not_ just a cosmetic change: Even though one might assume that
+    the operation would have failed anyway at the point when the new tree
+    object is written (and the corresponding tree object _will_ be new if it
+    contains a blob that is new), but that is not so: As pointed out by
+    Elijah Newren, when Git has previously been allowed to add loose objects
+    via `sudo` calls, it is very possible that the blob object cannot be
+    written (because the corresponding `.git/objects/??/` directory may be
+    owned by `root`) but the tree object can be written (because the
+    corresponding objects directory is owned by the current user). This
+    would result in a corrupt repository because it is missing the blob
+    object, and with this here patch we prevent that.
+    
+    Note: This patch adjusts two variable declarations from `unsigned` to
+    `int` because their purpose is to hold the return value of
+    `handle_content_merge()`, which is of type `int`. The existing users of
+    those variables are only interested whether that variable is zero or
+    non-zero, therefore this type change does not affect the existing code.
+    
+    Reviewed-by: Elijah Newren <newren@gmail.com>
+    Signed-off-by: Johannes Schindelin <johannes.schindelin@gmx.de>
+    Signed-off-by: Junio C Hamano <gitster@pobox.com>
+
+
+Running the second command yieled a similar output. Here is the original commit with commit id, code changes, and author:
+
+commit 0b55d930a69692c7f4e7b90e35fa41f6c46df4bc
+Author: Johannes Schindelin <Johannes.Schindelin@gmx.de>
+Date:   Wed Sep 28 07:29:21 2022 +0000
+
+    merge-ort: fix segmentation fault in read-only repositories
+    
+    If the blob/tree objects cannot be written, we really need the merge
+    operations to fail, and not to continue (and then try to access the tree
+    object which is however still set to `NULL`).
+    
+    Let's stop ignoring the return value of `write_object_file()` and
+    `write_tree()` and set `clean = -1` in the error case.
+    
+    Reviewed-by: Elijah Newren <newren@gmail.com>
+    Signed-off-by: Johannes Schindelin <johannes.schindelin@gmx.de>
+    Signed-off-by: Junio C Hamano <gitster@pobox.com>
+
+
+I've included 1.txt and 2.txt to represent the commands listed above respectively, which include the output of git show [commit id] for each actual commit (code changes). 
