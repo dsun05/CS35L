@@ -1,0 +1,420 @@
+So we were talking about version control. And we're using as our case study, Git, which is perhaps the best known version control system. And last time I talked about how Git sort of has both your past and your planned future. So what I'd like to do is do a little bit of the planned future before we go into too much more detail. So I have here a copy of diff utils which we cloned last time and it's possible I might want to make a change to that. So for example I can go to source diff dot c and So make a change. Let's get rid of my kernel as one of the authors. By the way, this is very rude. You know, this is like totally bad. I'm changing the author. This like violates the UCLA plagiarism policy and the whole nine yards, right? I'm pretending somebody else wrote it even though this person didn't write it.
+
+And you should like report me to the chancellor or something. Anyhow, so let's say I want to make this change to the source code and I pick this change because it's innocuous, right? It's not going to affect anything except scholarship. And what you can do now is you can say, okay, I plan to make that change, right? All I've done so far is change the working file, right?
+
+So the last time we talked about the object database is for past. The index or the cache is for the planned future. So far I haven't changed either one. I've just changed the working files. They're just, they're nothing. They don't matter as far as Git goes except as a way of getting information into one of those other two things. The way you can go from the working files, which I'll put down here, which are the files that everybody else knows about. Your compilers, your test programs, all they see is the working files. The way you can go from there to your planned future is with the command git add. If you say git add f, ref is a file name, what you're telling git is I'm planning for that particular sort of change to go into my future.
+
+So at this point, we could say get add source diff.c and it's very quiet. It assumes you know what you're doing. And we have now told get that's one of our planned changes for the next commit. We don't have to stop here. We can keep making other changes to the working files. So I can go back to diff.c and let's Let's get rid of this guy. Who is he anyway? And then at this point we have three different versions of diff.c that are in some sense they're all the main version. That is at this point the working file, the plan for the future, and the record of the past. And here this is going to contain the most recent that's considered to be part of the past. We got three different sort of versions of what should be in diff.c. If you run the command, git diff, it tells you what the differences are between your plans for the future and the working files.
+
+What happened here is we see there's a minus sign sitting in front of the Richard Stallman line because that has been deleted. That is, it's in the planned future, but it's not in the working file. So, you know, let me say git diff. What it does, it compares these two things. Now, sometimes that's not what you want.
+
+You don't want to compare the working files to your plans. You want to compare the working files to maybe the most recent commit. I often want that instead. And you can do that with a different command, which is git diff head. It compares these two. We can try that over here.
+
+And notice here we see the combination of the two sort of changes that I want to make. You can also, if you like, compare these two. I guess that's the only other two. I don't do this very much.
+
+And that will compare your plans for the future that you've added but you haven't yet committed. Let's try that. Now you may be thinking, "Wow, that's a lot of things to compare." This is kind of more complicated than I thought it would be.
+
+is between what I got and what the most recent version is. Well, okay, you can run this, but you should also know about the other two possibilities. And in fact, the Git developers have kind of hinted to you that this is probably what you want by default most of the time. The difference between your plans for the future and your working files.
+
+I should mention one other thing. This funny word here, "Head" hold capital letters. That's a symbolic name for the most recent commit in your history. In some sense, you know, it's the most important commit is the one you probably would want to look at by default. You don't have to look, though, at that particular commit. You can use git diff to run against a whole bunch of other commits. How many commits? Well, let's see what we have here. I'm going to run git log, which by default gives you a history of all the commits in your repository. That is, it looks everywhere in the past up through the most recent commit and it tells you about them. It's pretty long, so I'm going to stick it in a file, take a look at it. So, as you can see, we can see these commits listed in reverse order because usually people care about about the most recent one. And each commit has a unique ID, that long hexadecimal string that's like, wow, 40 hexadecimal characters. And we can go take any of the commits in here. We'll go down to, I don't know, maybe here. And we can pick that one.
+
+and do a get diff off that. Like this. Whoops. We'll get there. So in some sense, when I type get diff head, there's a lot of changes since then as you can see. When I type get diff head, it's as if I just said get diff with the hexadecimal string of the most recent commit. So head is a shorthand for the unique ID for the most recent commit. Any questions so far about this three-way diff thing? Yes? So cached says I want to compare the cache to by default to the most recent commit.
+
+So it's going to tell you the difference between those two. Other comparisons. All right. So suppose now we would like to actually instead of just making plans for the future, we'd like to actually sort of do this transition. Take our plans for the future and stick them into the history. What we can't do is go and change history, go back to the old commits and update them. That's not allowed. History is supposed to be immutable. So if you look at all those commits with all those hexadecimal names and all that sort of thing, they're frozen forever. But what we can do is we can run the command get committed. What this does is it takes our planned future and creates a new commit. In effect we're extending the past because now we're saying our planned future is definitely what we want. So we can do something that looks like this.
+
+And what did it do there? It puts us into another editor here and it says, "Oh, could you please describe the change you're about to make?" Okay. Now, for newcomers, it's very common to take a look at this sort of thing here and say, "I'm just describing the change." I mean anybody later can do a get diff to see exactly what the change is. This is unimportant. This is just the commit message, right? So you're going to specify a commit message. This commit message is not part of your working files. You'll never see it down here.
+
+It's only auxiliary meta information associated with the commit itself. And since it's not in your source code or in any of your working files, it's easy to think it's not very important. In fact, what some people will do is they'll just say XYZ and hit and then hit save. Please resist that temptation.
+
+I'm writing the commit message than I do writing the code. Not often, but sometimes. Because what this commit message is doing is it's explaining to your future self why you made the change. Git diff will tell you what the change is, but often it's more important to explain to your future self or to your fellow developers why you're making the change. So what can we do here? Well, we can, I don't know, pop up exactly what change are we making here, right? All right, let's try it again. Git, diff, right? So we're making, is this the change we're making? No, we want to look at the change from here to here, right? So, we want to look at this, right? Git diff cached. Notice that it's a little tricky here because if I were to just run git diff, I'd be looking at the working files versus the planned future. That's not what I want this commit message to be about. I want it to describe the difference between the most recent commit and the planned future, which is about to become that, right?
+
+So here's what we're doing and we'll give a reason why, right? Mykirtle said to give Professor Misdine all the credit. This is by the way not true. Mykirtle really did the work but let's pretend it is true, right? Then I'll save this commit message And I'll exit the editor and then what happened? It didn't like it. Oh my. I have to put something on the first line in the log message with a colon. Alright, I'll do something like this. And now it's picking at me again.
+
+Let's try it again. Now, what's going on here has to do with some of the hooks that I think I mentioned last time. The Diffuse-Tills project leaders have decided that they don't want you to put in arbitrary commit messages. They want the commit messages to follow a standard format.
+
+I tried to do a commit that didn't follow that format and the hooks in DiffUtil said no, no, no. I won't let you do that commit message. This I think helps to sort of illustrate how important commit messages are. I think this one will work so we'll give it a try. Alright, it finally worked. So now if we run git log we'll see that we have a new new commit with another 40 digit hexadecimal number assigned to it automatically by git. And some meta information about the commit, including who made it and what the time and date was and the commit message. Any questions about this? In some sense, git add is one of the simplest things you can do. And if there's sort of any trouble here, yes, we should iron it out now. Yes?
+
+What if we accidentally leaked an API key?
+
+All right. So I said you couldn't change commits. And in some sense, that's hard coded into Git. That particular commit ID will always stand for the commit of changing that one line and then it'll have that meta information associated with it.
+
+You cannot change that. It's absolutely forbidden. And there's a reason for that. I mean, I'll get to your question eventually. Part of the reason is this idea that Git automatically assigned an ID to the commit, which is this long hexadecimal number. That assigned value has got the following interesting property.
+
+That hexadecibel number is uniquely determined by the contents of the commit. It's not that Git has this collection of commit IDs somewhere in a database somewhere and it just hands them out to you. That's not how it works. Git looks at the contents of the commit. It computes a checksum of the contents of the commit. And that's the checksum.
+
+So that may help to explain why you can't change the commit with that ID. If you change it, it'll have a different checksum and therefore it'll have a different ID. We're stuck with this commit forever, at least in some sense. Now, checksum that git uses is called SHA1, which you can look up on Wikipedia and all that that sort of thing which is short for secure hash algorithm number one. Wow, that sounds pretty important. The basic idea of SHA1 is the following. You can take any byte string and forget this byte string will be the contents of the command.
+
+But SHA1 doesn't care what the byte string is. It's simply an algorithm that operates on byte strings. And what it'll do is generate a 160-bit checksum. The design goal for SHA1 is to generate a 160-bit checksum.
+
+is not simply to compute a checksum, but to compute a checksum that is, put this in quotes, "cryptographically secure." And by that, I mean that if you know the checksum, it's going to be computationally intensive that is impractical, shall we say, to know what the original byte string was. I'm not saying that very well. I mean, this byte string could be very long, right? Could be one gigabyte long. So it's possible that you will have two different byte strings that hash to the same value, right? There's only 160 bits here.
+
+That's why we have a hex decimal representation that's 40 characters long. So this would be a collision. Two different sort of byte strings that have the same checksum, which would be a disaster for Git, right? Because it would mean you might have two different commits in your history that have the same name. We don't want to do that. But the idea here is that if you have a checksum, it's impractical to compute a byte string equal to that checksum. This is a one-way hash function. It's cheap to go from a byte string to the checksum. It's very expensive, if you don't know the byte string already, to go from the checksum to some byte string that maps to that data. And given that it's a 160-bit checksum, what is the probability that two different commits in your repository will accidentally have the same ID? Well, it's unlikely. That's the probability of collision.
+
+of accidental collision.
+
+That's never happened to me.
+
+It's never happened to you.
+
+And I'm pretty sure it's not going to happen to anybody in this room.
+
+Of an accidental collision.
+
+Because this is just so unlikely.
+
+Question?
+
+The contents of a commit are not simply the code, they're also the meta information. The commit message, the author, the date, and a couple other things that I haven't shown you on the screen. So you would have to have identical sort of author and date and everything else.
+
+And as we'll see later, that's, I won't say it's impossible. You could do it. But unless you, you know, you get, I mean, we're not talking an accidental collision here. We're talking about exactly everything. All the meta information is the same. When that happens, Git will say, oh, I already got commit here in my database that matches exactly what you want. So it doesn't have to do anything, right? It's okay. Question?
+
+Why can't it just assign checksums sequentially? Assign checksums sequentially. There are competing version control systems that do that. One that I used for a while is called BZR and that sort of thing. The problem with that approach is that as long as you have a single repository, it works, and it's actually in some sense more convenient.
+
+because the commit IDs are short numbers rather than these long strings. But it has a problem if you want to have a distributed system with lots of get sort of operating at the same time, sort of in quasi parallel, that sort of thing, because you're developing, your friend is developing, the guy in the next room is developing. Once you do that, having a single sequence number is much more problematic.
+
+a single central server to get the number or your numbers get out of whack. And the Git folks didn't want to do either. They didn't want the numbers to go out of whack and they didn't want to insist that everybody develops has to talk to a central server. They wanted to have a decentralized approach. Good question. Other questions about these numbers? Yes? I've done things like squashing commits in a Git repo. Is that removing a commit or what is that?
+
+All right, so yeah, you're getting back to the question, you know, I made a mistake. What can I do? Well, all right, here's what we can do. All right, so notice right now we have a single commit dated today and then the previous commit is dated, you know, a week or two ago, right? And let's say we made a mistake.
+
+What we can do is edit further. So I'm going to edit, I don't know, source diff.c and I'll, let's get rid of this guy. Who is he anyway, right? And let's get rid of this guy too. So let's say this is the change we really wanted to make. What we can do is go back and run git add like before.
+
+Now, if at this point we did a git commit, we would now have two commits that we had added to the repository, right? Both data today, one with the wrong stuff in it, and one with the right stuff. And let's say we're so embarrassed by our first commit, we don't want anyone to see that commit. We can do that by using this option.
+
+There is an amend option to git commit. And it handles the most common way that this comes up, which is you do a commit and then, you know, 30 seconds later you say, "Oops, I screwed up. I didn't want that commit. I wanted something else." The working files started off wrong. Now, the working files are the way you really wanted them. Do a git add. But this commit with the amend option does not create a new commit based off the most recent commit. It creates a new commit based off the second most recent commit. I can draw a picture of that.
+
+So we can assume that our history sort of looks like this. Here's a bunch of commits. I draw an arrow from each commit to the next older commit. The actual diagram is much longer than this and that's all right. When we did a git commit, we created a new commit, I'll call it C. We don't like that commit. We don't want it. We're going to create a new commit and I'll call it D.
+
+and we'll put it here.
+
+Commit C has not, you know, we haven't changed its contents, but we've created a new commit with the contents that we've preferred.
+
+And that's essentially what git commit amend is going to do.
+
+So I'll run that.
+
+And it'll say, get rid of many incorrect authors. How's that? And then what we now have if we do look at the history, get log, we'll see that in our history now we can see D and we can see all the older ones and C in effect is no longer visible in the history. Now, that commit C is still in the history somewhere, but it's not in our history. Question? We can do that. I'd like to save that for later, though. All right?
+
+I'm even a little reluctant to tell you about the amend option. And part of the reason I'm reluctant is because in order to get into UCLA, you guys had to be perfectionists. Everything had to be perfect. All your transcripts had to be glowing, all that sort of thing. So I know I'm in a room full of perfectionists. In fact, I may be the worst I know that this sort of thing is very tempting because everybody makes mistakes, including me, and we don't like other people to know about those mistakes. So a trap that many first-time Git users run into is the trap of wanting to make their histories look really There are sometimes reasons you want to do that, and I'll get into that later. But at least at the start, I think it might be better if you put everything into your history, warts and all. So don't use commit amend, at least not at the start. Just say, oh, you know, I had a bad commit. I'll do a better one next time.
+
+Next time. Later on we'll see that that's too simple and there is good reasons for men and all that sort of thing. But at least at first try to avoid the temptation to make everything perfect. It's okay to make mistakes. Other comments about this sort of thing? All right. It's possible that you made a lot of changes. And if you make a lot of changes, is it can be a pain to run git add a and git add b. Because that forces you to remember all the files that you changed. So there's another option that you can use. You can either do this and then do a git commit. Or you can just say git "Commit" -A. The -A option basically says, "Every working file that I changed, add it." And then do a commit. So sometimes if I'm feeling really tired and down, I will do something like this.
+
+This is very bad practice. Don't do this. But A means just commit everything that I've changed. M option says here's my commit message. So it doesn't drop me into the editor or anything like that. You know, the editors are for wimps. You just type the message directly into the shell and then that's good enough. More commonly, I'll put this sort of thing into a shell script that will do commits for me.
+
+in some automated way. And so that will let you specify the commit message without having to go and use an editor. All right. Let's see what else you can do. Some other commands. Here's one of my favorite commands that hardly anybody else uses, but I really like it. Get LS files. All right.
+
+here and see what it does.
+
+Get LS files.
+
+What it does is it just puts all of the files under get control.
+
+Right?
+
+You know, just lists them one by one.
+
+So, this is sort of a list of working files except not really.
+
+Right?
+
+Basically what this says is go to the most recent commit, find all the working files in that commit and tell me their names. Now, it's possible and in fact typical for you to have more working files than what's in get LS files. So why would that be? Well, if we go and look and say in our source directory, here is I've done a build and so I have a source code file named analyze dot C and then an object file called analyze dot O. Well, get LS files only mentions the first one, not the second one. So it's a way to easily find out which of the files in your directories are important, important enough to put under version control and which files are derived from those more important files. So you can think of get LS files as saying, please tell me all the files that I'm editing by hand. That's one way to think about it. Which means we can run, I don't know, commands that look like this. Grab minus I Eggert get LS files. This will find every instance of the string Eggert in any of the working files. And you can imagine there's a lot of other sort of shell scripts that you can use that would be more important than this that would let you sort of munch the working files without worrying about the less important files. All right. Let's see. By the way, this combination is so common. There's a short version of it. You can say this.
+
+Git grep basically says run grep on all the working files.
+
+And that's going to be more convenient perhaps than using get LS files.
+
+So that gives us the same output.
+
+But get LS files will let you do many more things.
+
+You don't have to run grep, you can run other commands.
+
+Get grep is sort of fairly specialized.
+
+All right.
+
+Let's see what else we have here. Git status is a command I use a lot, so let's write it down here. Basic issue is here. A lot of times when I'm working in a repository, I'll go and have a cup of coffee. Or I'll go teach a CS35L lecture or something.
+
+and I'll forget what I was doing. Git status is a command that's designed to tell you sort of what were you up to before you went away for that cup of coffee. So it reminds you sort of what's happening here. So what do we have here? We have untracked files.
+
+Maybe you want them to be under git control, but they're not. This is not the same list as the list of all working files that are not under git control. No, it's a shorter list. What git does is it uses a plausibility test to see whether some random file that's sitting in your directory is something that maybe you should think about. How does git know?
+
+Which files are plausible and which are not? There is a file called.gitignore. And if we look in that file, we'll see something that looks like this. The.gitignore file is a list of patterns.
+
+each one per line. And these are the names of files or patterns that Git should ignore when it's worried that you've forgotten to sort of add a working file. So the first line here says star dot a, third line says star dot o, that third line says if you see a file name ending in dot o, it's okay.
+
+We're not going to make that a working file. That's just an object file that you can ignore. Don't remind me about it when I do a git status. It's just not worth worrying about. As you can see, we have a number of files to ignore. Now, the patterns here look like shell globbing patterns. In fact, this syntax of git was inspired by the shell. But it's not exactly the same as the shell. So what are some of the differences? Well first off, if the line does not begin with slash, that means this, and there's no slashes in it anywhere, so those first eight patterns or so, those patterns apply anywhere in your working files. It can be at the top level, It can be several levels down. Any file name ending in.o, ignore it. I don't care where it is. Whereas, a pattern starting with slash, like this pattern, slash main to.mk, that matches only at the top level of the repository. It says if you have a file main to.mk at the top level of, I'm sorry, the top level of the working files in your directory, ignore that, but don't ignore it anywhere else.
+
+Another difference here is that if the pattern ends in slash, that says this pattern has to match a directory, please ignore that directory and everything underneath it. So we have a pattern here saying slash gnu-lib-test slash, that means that directory is completely automatically generated, don't worry about it.
+
+All right, any questions about this.gitignore file? You should have one question. All right, so I'll ask it. Where did this file come from? In some sense, I said this file is here because without its help, Git is not smart enough to know, which of the files it should ignore and which it shouldn't. Here we've helped it by having a gitignore file. Does that mean that I have to every time I check out the repository I have to type in a gitignore file? No. The gitignore file typically, doesn't have to be, but typically it's under version control. So this file, if we look at gitls files, will be in part of that list.
+
+Git LS files.
+
+So notice there is a.gitignore file that is version controlled and the diffutils developers update it whenever they see new files springing into place or that sort of thing because they don't want to be bothered by git status telling them stuff that they don't really care about. It's part of the source code to diffutils is this getignore file because it's needed for people to maintain the diff utils. Any questions about this file? Yes? Yes. So you can have one at each directory in your source code. And so there's kind of two styles for doing it. Some people like to have a git ignore file in every directory. The diffu git tills guys say, just stick it at the top level. Either one will work. If you have multiple ones, then it looks at the closest one and then the next one out and that sort of thing. Question? Sorry? So if the pattern starts with a slash in a -- in a git ignore file. For example, there's slash star dot diff about 12 lines down. That means any file ending in If you see a file name ending in.diff at the top level, ignore it. Because the slash says I got to be at the top level. However, if you see a file and name ending in.diff anywhere else, tell me about it. So, for example, we can do something like this. Get div now.diff.
+
+So, git status is now saying, wait a second, you've got a file xyz.diff under your source directory. Is that a new file that maybe you should think put it under version control? But it didn't say that for the top level diff because I've told it in the gitignore file. The gitignore file has told it, don't worry about that one. Other questions about gitignore?
+
+Yes.
+
+Not about gig more, but apparently a closet is telling me that the zoom lecture currently looks like this. It's just a black screen.
+
+Oh.
+
+Thank you.
+
+Yes, time out for, oh, you know what the problem was. Here's the zoom controller, and that's what I did. And so it pressed buttons at random.
+
+See if we can fix this.
+
+Oh my, where is the camera? The camera is pointing straight down.
+
+Or something, I'm not sure.
+
+There we go.
+
+Oh my, all right. So the people underneath the camera now are stars of this show.
+
+This time I will put it out here. All right. So if we take a look, excuse me, at the directory, there's a couple of other.get things here, right? One is get modules. We can take a quick look at that, but I'm going to skip over that. That lists all the submodules. That's a more that I won't be talking about today, but it's often used in projects. I'm more interested in the other.get, this thing. So.get itself is a sub-directory of your project, and this sub-directory is where get keeps all of its stuff. So when I talk about the past, or the database of all the past. And when I talk about the planned future, those are all stored in your.git subdirectory in a bunch of files. We're not going to talk about these files today, except for one of them. And that file is this one, which is the.git/config file.
+
+This one, you know, in some sense you might think, oh, it's going to be another file like.gitignore because it tells you about your repository. But it's different in an important sense. The getignore file is typically under version control. So the developers here keep track of what's in it and collaborate and what should go on and all that sort of thing.
+
+.get slash config is not under version control. It's in some sense part of your repository. It's the way it implements version control. So it's not something that you can sort of have under version control itself. But what it does is it tells get about your repository.
+
+and any special features, all that sort of thing.
+
+And so forth.
+
+So a very simple config file might look like this.
+
+We have some core features.
+
+I won't go into the details here, but this is a version number and all that sort of thing.
+
+It tells us a remote which is the repository that this repository is based on. I created this repository in the previous lecture by cloning from git.savannah.gnu.org and this the remote section says that's where you got it from. Third major category is talks about branches in this repository. We have only one branch so it's kind of boring and the fourth section talks about submodules, which I'm not going to talk about today. You can manipulate this config file directly or you can be more disciplined and organized. There is a command called git config.
+
+which has a whole bunch of options on it and basically what the options let you do is add new lines to this, specify different values for parameters and all that sort of thing. I'm lazy so I can't remember all the options to get config. It has like three dozen. I'll just go edit the file directly but watch out if you do that. If you edit this file incorrectly and put bad stuff into it, So if you do edit it by hand, make sure you save the old copy first before you go off and do that. And remember, it's not under version control, so git won't save you if you trash it. All right. So you can run something like this. Git config minus L.
+
+In effect reads your git config file and tells you everything of interest about your current repository. And as you can see it tells you more than what's in the original file because some of the stuff is hardwired into git although you can override it. So we can see all sorts of things that git will do if we do x and all that sort of thing. And the git config man page will tell you details about how that works. Alright.
+
+Well, I think this is a good time to take a break. So let's take one and start up again at the hour.
+
+All right, let's start up again. So I want to talk a little bit about some shorthands.
+
+You can say something like this.
+
+Right, where this is our 40 byte commit ID.
+
+That's kind of annoying to have to cut and paste that in.
+
+Nobody can remember them.
+
+So there's some common shorthands that people use to name these commits.
+
+One I've already told you about, which is head, by convention that always names the most recent commit on the branch you're on, and so forth, that means the most recent commit. But you can also do what I'll call arithmetic on commits. So, if you have any commit, I'll call it C, If you put a circumflex after the C, that names the commit just before C. C's parent. So, for example, you can do something like this. That's two dots.
+
+that says tell me the difference between the most recent commit, being the new one, and the commit just before that. And with this, you can either get all the differences in all the files, or if you just want to see, say, a few files. And then, I don't know how to get ignored.
+
+Tell me the difference between the previous one and the current one, but just for these files. I don't care about other differences. Now, there is an opportunity for confusion here because it's at least theoretically possible. You'll have a file name spelled that way. Only crazy people would do that, but it's theoretically possible. In order to sort of convince Git that you know what you're doing, Say space, minus, minus, minus, space. Everything in front of the minus, minus is using sort of the commit ID syntax. Everything after the minus, minus is going to be a file name. And that way you avoid all that or any potential confusion there. You might think, oh, that's never going to happen to me. Well, as we'll see later, you can name commits with tags. So you can say something like this.
+
+This still names a commit, but it's a tag that the developers put into the repository saying I want v3.1 to stand for this 40 digit commit ID. And once you start having tags, then the need for the minus minus goes up, right, because it's quite possible this tag name will collide with the file name.
+
+There's sort of other kinds of arithmetic you can do. Instead of saying C hat, you can say something like, let's see what else, oh, you can say something like this, right? This means go back three versions from C. To be honest though, I hardly ever do this. I'll just say this instead.
+
+usually I don't want to go back that far. And in effect the circumflex you're writing down the number in base one and base one is good enough here. Another syntax that you can use is this. This matters only when you have merge commits which we'll talk about later. And this basically says Give me this C's second parent. Normally you get the first parent, but if you want the second parent, you write it this way. One other shorthand notation that I use a lot is something that looks like this. When you run get diff and you have a version number hat exclamation point, this is equivalent to saying this.
+
+Right?
+
+That is, it says just give me the changes in that particular commit.
+
+I don't want to see any of the other changes, right?
+
+From the one just before the commit to this commit.
+
+All right?
+
+So, you know, we can run that here.
+
+And that basically lists the changes that we made in the most recent commit. This same syntax works for other git commits. So for example we can do this. This says don't give me the log for the most recent history, just give me the log for the most recent commit. And you can, you know, use range and that sort of thing. And for git log and for other commands as well. One other command I should mention that I use more often than I would like to admit is this one. Git blame. And the word blame is I think originally supposed to be a joke.
+
+But it's a joke that people sometimes take too seriously. So what does git blame do? If we run git blame on a file, like git blame source diff dot c, like that, what it does, the output, lists all the lines in the file.
+
+some meta information about each source code line. Excuse me. That meta information corresponds to the commit that introduced that particular line to this source code file. So this struct regex list line was introduced 31 years ago.
+
+A long time ago. And you can then in effect if you find a bug in the source code the idea is you find the line containing the bug, you run get blame and then you know who to blame for this bug. That's where the name came from. Now I should warn you two things about that. First off the idea of blaming software developers is a toxic one. And in some sense I'm trying to be lighthearted here, but in some sense this can be a serious problem in real development organizations. Once people start casting blame, the natural reaction is to avoid blame. And there are all sorts of things you can do in a git repository to avoid blame if that's your goal. And people spend too much time figuring out how to not get blamed for stuff. And the productivity of your development organization plummets to zero. So you should not really think of get blame as being something like that. If your manager uses get blame to decide who to give raises to and who to fire, you're in a bad place. Go work somewhere else.
+
+So that's one thing. Second thing, just because there's a commit next to the line with the bug doesn't mean that commit introduced the bug. For example, possibly in 1994, all I did was I changed the indentation for struct regexplist. Or maybe I moved the code up here from down below or something like that.
+
+And so the real bug was introduced earlier by the person who decided that len should be of type idxt. That's the real bug. Well, that wasn't me. That was somebody else. So you can't simply use get blamed to figure out which commits caused a problem. What you typically would have to do here if, for example, suppose we decide that the bug is this idxt len business here.
+
+then probably what we should do is look to see what this commit did and see if it did something innocuous like changing the indentation in which case we have to go back in history and which didn't. So we could do maybe something like this. Grab the commit ID for the line that you're worried about. This line right here. Oh, I guess I should mention one other thing.
+
+you can give a prefix of a commit id. And as long as that prefix is unambiguous in the current repository, that's good enough. You don't have to spell out all 40 characters. And that's what git blame is doing for me here. And so I can do something that looks like this. And say git diff.
+
+That didn't work. There we go. So notice what I'm doing here. I'm taking the commit that I'm worried about and I'm saying let's see the difference in that commit. I'm using its commit ID shorthand and then the exclamation point bang notation that we've said before. And here's the change.
+
+What this commit did was it changed size t to idx t in that particular line. And then we would then have to use our understanding of the source code to think, well, is that the bug? Or did the bug already exist even when it was of size t? And if the latter, then we have to run another git blame. You can say something like this.
+
+You know, V3.1. And, you know, minus, minus source. This says run git blame on this source file, but do it as of this commit rather than the current commit. So in effect, you're going back in history trying to track down the bug to its source and using git blame as a way of helping you find that. Any questions about how this works? In some sense, if you do this, it's like spelunking. You're going through the cave of history for this software development project, trying to figure out why things are the way they are. And a lot of software development is that. You're trying to figure out the why of something.
+
+All right. Well, if there's no questions, let's go on to the next major topic. I want to talk about branches. So far, I've been sort of assuming that your history looks like this. It's a line of software development. Here's your oldest version. Here's your newest version. So head, points to here. And each one of these guys points to the parent. Now, before we get too far into this, the direction of the arrows here is important. Normally, one would think, oh, arrows should point into the future, from the past to the future. That's the natural way that you would draw a graph like this. But Git does it the opposite way.
+
+Normally in get it's better to think of the arrows pointing backwards in time rather than forwards. We'll see why later, but for now let's just assume that. Now, branches can exist in case development isn't entirely linear. It could be that we have a situation that looks like this.
+
+lines of development, both of the same project, they typically don't differ all that much from each other. It's just that it's not the same history. So why would you want to do this? Well, one possibility is that you have two lines of developments because some of your customers are really conservative. They don't want to be sort of the guinea pigs for your developers. They just want to use a nice stable version that doesn't change except to fix bugs. So it could be that you have sort of the main line of development. And this is often buggy because Humans make mistakes and when you've just written some code there's a good chance there's mistakes in it. And it also has lots of new features. Versus you might have sort of a maintenance version. The goal of this is to have A few bugs, right? Only sort of crucial fixes involved. And no new features. That's very common to have a situation like that. And so we might have two branches here. This will be the main line of development and probably has a lot more commits than this.
+
+the maintenance branch points to here. Normally, you'll work in this branch, but you might want to work in the maintenance branch in case there's a bug that you need to fix there. So that's one reason, right? One possibility. There are other possibilities, though, for why you might want to have a branch, okay? One is you can have a branch.
+
+you have something called a feature branch.
+
+This would be a branch where you plan to introduce a new feature into the system.
+
+And it's going to take some work and you're currently working on it.
+
+While you're working on it, you don't want to bother anybody else about this new feature because it's really not ready yet.
+
+I mean, it sort of works, but it flakes out.
+
+You don't want to bother people with that.
+
+So you might have an extra feature branch here. Which will be, I don't know, the incremental garbage collection branch because you intend to change the garbage collector and make it run in a more efficient way or something like that. It's still flaky though, so let's leave it separate from everybody else.
+
+and a bigger one is sort of alternate visions of the future.
+
+This can occur when you have two competing teams of developers.
+
+They both think we really need to make some changes to the system, but they disagree about what technology they would use to do it or the basic way that it will interact with each other. So you might have two different branches and until you pick one of those visions, both sets of developers will work in their respective branches. The worst case is what is sometimes called a fork. Here, not only did you have alternate visions of the future, but the teams of developers never could agree on each other. So they agree to in some sense go their separate ways. Each works in their own branch indefinitely. There's never going to be any attempt to sort of make the two branches the same again. I hope that doesn't happen to you but it can happen on occasion. All right. So what is a branch?
+
+It's tempting to think of a branch as being something like this in the tree. Right? It's a tree with branches. Well, you know, what's hard to-- but that's not exactly what a branch is in get. A branch is a lightweight, movable pointer to a commit.
+
+All right. So what do we mean by that? Well, right now in this repository, I have a branch called master. Since I'm currently on the master branch, head is an alias for master. When I do a commit and I'm on the master branch, The way it works is this pointer called master is automatically updated. So when I do a commit, I'll create a new sort of commit here and master and also head will be changed to point to this new one. There's not much in the master sort of pointer itself. It's just a pointer to a commit.
+
+It has a name associated with it is a commit ID and all that sort of thing. But there's not much next other than that. That's why we call it lightweight. Also, everybody knows, or at least everybody should know, that this name, master, stands for different commits at different times. It's movable. It's not fixed like a tag would be. Normally with a tag, a tag points to a and it will always point to that commit. A branch, it can point to a commit that's quite different two minutes from now than it points to right now. So you'd have to take that into account when using branch names in your shell scripts and that sort of thing because you can never know what that branch is going to point to at least in this commit. So let's see sort of some commands you can use.
+
+use with branches.
+
+First off, there's just the command get branch.
+
+Let's write that one down.
+
+Well, put it over here.
+
+This lists your available branches.
+
+We just cloned this repository from somewhere else. Ordinarily, when you clone, you just get one branch, the branch that people care about, which is typically named main or master in older repositories is the one that you get. But you can have more than one branch as needed.
+
+You can create a branch with a command like this.
+
+So we can do that here.
+
+Git branch CS35L.
+
+Why not, right?
+
+So we've now created a branch.
+
+And so if we now run the command git branch, we'll see that there's this new branch, CS35L. But, you know, we haven't really modified the tree, right? We had a branch called master. We now have another branch called CS35L. It's pointing to the same commit that master pointed at because ordinarily when you run git branch and just create a branch, it says, okay, Okay, wherever you are, I'll create a branch there. So notice, here we have two branches, but this tree, well it has some other stuff down here, but it looks like it's just a single line of commits. From Git's point of view though, there are two branches. The star next to master says that's the branch that we're currently on. And the significance of that is if we Now do a commit. Master will follow along. CS35L won't. If we want to grow the CS35L branch, we're going to have to switch to that branch, which we can do this way, git checkout CS35L. What the checkout command does, it says, oh, I want to turn my attention to that branch. In general, what git will do is it will will change the working files that you have to match the contents of the branch that you're switching to. If there's any trouble in doing that, it'll yell at you and maybe not let you do it. But in our particular case, this checkout command worked fine because it's the same set of working files for the two branches. If we now do a commit, echo, who, and get commit minus m am foo.
+
+Oh, this is -- oh, all right.
+
+Get commit minus am.
+
+Then what we've done is we've added a commit to the CS35L branch because that's what we're currently on and the master branch is still the same way that it was before. So you can turn your attention to a different branch by using get checkout. You can modify that branch as you go by just doing commits as usual. Then you can switch your attention back to the original branch if you want by doing a I often do this instead.
+
+So what I'm doing here is I'm checking out this commit that's changing all my working files to match what's in that commit. And while I do that, I create a new branch B. So this both creates a branch and go to that commit and create a branch there. So that after I run this command, if I start doing commits, I'm growing my new branch.
+
+branches and commands that you can do with. Let's try a couple more. You can delete a branch. Just take the branch that you don't like and delete it. So here, for example, suppose we didn't like CS35L. So this is this kind of weird branch that we've created.
+
+You can do get checkout master and then get branch minus d, right? Oh, I'm sorry, CS 35L. When you delete a branch, you're just deleting a pointer, right? You're not actually deleting any commits. You're not changing the graph of all the commits in the database. All you're doing is you're getting rid of this pointer. That being said, if you have a situation that looks sort of like this, which corresponds to what we have, right? Here we have master here, and we have CS35L here, heads here. If we were to leap this match, there might be a problem later on.
+
+We kind of like knowing what was in this commit, right? So it's warning us now, hey, if you delete this branch, you might have trouble finding this stuff later on. We can use git branch minus capital D, CS35L, to say we know what we're doing and we're, you know, we're actually deleting the branch, right? This pointer no longer exists.
+
+The commit ID, however, is still in the database, right? So if we do, say, a git log and then go back to this commit ID that the branch used to name, it's still there. And we can go check out that commit later if we want, right? For example, I could say git checkout minus b cs35l that long hexabcimal number and I recreate the branch the same way that it was before.
+
+All right.
+
+One other operation that I often do with branches is I don't like the name, but you can rename a branch this way.
+
+Minus M I think is short for move.
+
+This says rename branch B to branch C.
+
+You're not changing any of the contents of the repository. You're just saying, well, this used to be CS35L. Let's change it to just CS35 or something. All right. So this idea of branching will let 100 flowers bloom. If all we have are branches, Then eventually we're going to have a tree that looks nice and bushy. Here's a branch, here's a branch, here's branch B, here's branch C, here's branch D and all that sort of thing. And we're going to have a tree that could be nice and fun from a computer science point of view. However, it's kind of a pain from the point of view of software maintenance. If we have a hundred different branches, a hundred different versions of the source code. And people are going to start getting confused. Furthermore, a common thing you'll want to do if you have a feature branch is you want to make that feature branch be part of the main line of development. So a thing that we'll need in addition to branch, branching, is the idea of merging. Right? The basic idea of a merge is, okay, here's a feature branch IGC, right? I would like all the features in that branch to be put into the main branch, the master branch. So what I really want is something that looks like this. A single commit of a single version of the source code that has all the features that have been added in master since we branched off, and it also has all the features in the IGC branch since it branched off. This sort of thing is called a merge commit. And the way that it works is we have a command called git merge. And you can specify any commit ID here. And the idea of what a git merge is, is if you're sitting here here at the master branch and head is here. You want to create a new commit. You want master and head to point here, that new commit. And you want that new commit to contain all the good features of both lines of development. Now, this idea is not limited to just merging one branch.
+
+merge two branches into what you have. And in fact, have a three-way merge. And you can have four. And you can define. All that sort of thing. I think the record in the Linux kernel is a 51-way branch. After they did that, don't quote me on the number, with some large number like that, Linus put his foot down and said, we're not going to do that again. It's just too complicated. So today, I'm just going to focus on two-way branches, and to some extent, that's good enough, right? After all, you could always do an n-way branch as a series of two-way branches, right? Just take n and subtract one and do that many two-way branches and you're done, right? So let's think about how a two-way merge is going to work.
+
+Well, some forms of merging are easy. Suppose this IGC branch here, right? So, you know, here we're running git merge of IGC. Suppose the IGC branch merely creates new files, which you can do by doing a git add of a file that you didn't have before and doing a git commit.
+
+So it only creates new files. In that case, the merge commit's going to be easy. Just take all the changes you had here, add the files that the IGC branch created, done. But ordinarily, it's not going to be that simple. Because ordinarily, we'll have changed maybe source.diff.c here, and this IGC branch will have also So we'll have two competing sets of changes to the same file. So we need a strategy for merging two sets of changes to the same file.
+
+So how are we going to do that? Well, fundamentally, the way we do this is sort of a, how shall I say it, a file arithmetic. So suppose we have three versions of the file, B, A, and C. And I'm writing them in this order, right? Because what I want to do is the following.
+
+You know where you're branching.
+
+For say one particular working file.
+
+Say source.
+
+C will be the contents for the current branch, right?
+
+It'll be different.
+
+Because what we're looking at here is, you know, here's the main branch which we're currently on. This commit contains a copy C of source diff dot C. We have over here the other branch.
+
+It contains the contents B of the thing we're trying to merge. We want to create this merge commit here. We're trying to figure out what's going to be in it for source.biff.c. The key idea to get this to work in a sane way is let's go back and look at the common ancestor of the two branches we're trying to merge.
+
+that common ancestor A. Now, this is a common ancestor, but we want the closest common ancestor to the two particular versions that we're trying to merge. And then, we do the equivalent of the following. Diff from A to B, and we'll call that, I don't know, D minus A dot diff. And diff A, C, and put that in C minus A dot DIP. We have two sets of changes that we'll want to merge. And now if we look at these two difference files, there'll be a set of edits, a string of edits. This DIP will say make this change, make this change, make this change, make this change.
+
+This one will also say make this change and then make this change. Each one of those diffs will say here's the source code line number. Here are the old version. Here's the new version. So there'll be line numbers. This might affect line number 100. This might affect line number 50. This might affect line number 200 and so forth. 190. As long as these edits don't overlap. We'll be okay. Because we can just merge these differences into something that looks like this. Change line 50 in this way. Change line 100 in this way. Change line 190. Change line 200. The only problem is going to be if you have colliding sets of changes. So if these guys both say, I want to change line 300, then you got a trouble here.
+
+I don't know what to do with line 300. And if this is 500, then after that we say, okay, that's the change we make to 500. So the idea of merging is going to be just take your two difference listings, you know, order them sequentially in the obvious way. As long as you don't have collisions, you're fine. Just take the listing here, apply it to A, and that will give you the resulting commit that you want. However, if there's a collision, we have trouble. And typically what git merge will do, and a bunch of other programs as well, is they will say, I'm not quite sure what to do here. And they will create a merged sort of edit that basically inserts a bunch of warning sign lines around this trouble The most commonly used decoration are lines that look like this.
+
+These are signals that you had a merge that didn't work very well.
+
+Now, this idea of merging is not unique to Git.
+
+You'll have it in every sort of version control system, at least every one that I know about.
+
+They have to deal with sort of merge collisions. There are even shell commands that will let you compute this stuff yourself. Let's give it a try. Here I'm not going to be using Git. I'll do a copy of etc. OS release to let's call it rel1. So we assume that etc. OS releases are common ancestor. And I'll do another copy of etc.
+
+to rel2. So rel1 is here, rel2 is here, etc. OS releases our common ancestor. Now we'll make changes to both files. In rel1, let's insert a rel1 line here and we'll change pop to pop-pop.
+
+And in rel2, we'll change pop to pop down. And we'll change this to xxx support URL. So we can run diff minus u, etc. OS release rel1. And you can see the changes there.
+
+for rel2.
+
+So two sets of changes.
+
+And now we can merge the two with the following command.
+
+You say merge into f.
+
+Well, let's see.
+
+I guess we would say merge into c, the difference from a to b.
+
+This shell command says, find the differences between a and b and merge them into C. Internally, it does this sort of computation in order to figure out how to do the merge. So we will say something like this. We'll copy rel1 into C, and we'll merge into C the difference between et cetera OS release and rel2. And notice that the merge command told us that there were conflicts.
+
+that's exactly what happened. All the changes that didn't collide with each other were applied. The competing change where one on one line of development we changed the pop to pop pop. On the other one we changed it to pop down. That's marked as a collision. So this merged file contains both sets of changes. It's just that with the colliding changes we don't to kind of know which one to pick. And it's going to be up to the human developer as to figure out what to do about those angle bracket lines. Any questions about how this text merging works? Can you see any problems that you might run into? I'll mention one problem.
+
+It's tempting when you have a merge collision like this to focus your attention on the lines delimited by angle brackets because it's telling you there's trouble. And then you go edit that to fix it, you know, the source code so it'll compile and all that sort of thing. Try not to be too blasé about the other changes. It's possible for Git Merged to work flawlessly. No collisions at all and yet the resulting code is completely bogus. Right? How can that happen? It could be that, for example, in the main line of development, we got rid of a function f because we don't need it anymore. And in this IGC branch, we added a new call to f that wasn't there before. That will merge cleanly. There won't be any merge collisions at all.
+
+Git will say everything's fine and yet the resulting file is totally bogus. So you can't assume that just because there are no angle brackets in your merge you're fine. In general it can be bad news. All right. Any questions on how this works? Comments about merges?
+
+All right. So, I'm going to briefly talking about an alternative to merging. I'm not sure we'll finish it, but we'll see how far we get. There's an alternative called rebasing. Rebasing is another way to take what's in your branch and sort of make it work in some other branch.
+
+So a merge works this way.
+
+You create a new commit M that has both B and C in it, right?
+
+Where here's the common ancestor.
+
+So that's how a merge works.
+
+A rebase works differently.
+
+You start with the same thing you had before. And here I'm assuming that C is the current branch, B is the thing that you're merging, right? So when you're done, the current branch will be here. With a rebase, what you want to do is you want to get all the improvements of B applied to C as if you started applying them now. So if you think of this as being delta 1 and delta 2 and delta 3, the way you do a rebase is as follows. You create three new commits here that look like the commits in B. They have the same changes as they did before. Except, of course, the contents of these commits don't look like the contents of these commits because you started from C rather than A. When you're done with a rebase, here's head. When you're done with a merge, here's head. Either way, you get all the features of both B and C. You get it here and you get it here. But with a rebase, you get a history that looks different.
+
+more complicated history. Because we have two lines of development. And there's a lot in common here. This is sort of a copy of that. This is sort of a copy of that. They may differ somewhat because you had collisions on the way and so this is really delta 1 prime, delta 2 prime, delta 3 prime. Still, there's a lot in common between this line of development and this. Over here, you don't have those copies. And in some sense, this more accurately reflects how you developed the code. Whereas this is more for the people who are compulsive. They want to have a beautiful single line of development history. They want to make it look like they thought of everything perfectly in sequence. So the idea of a rebase is eventually you publish this, you never tell anybody about this.
+
+So why would you want to do that? Is it just that you're trying to look your best? Some truth to that. But there are other reasons that you might want to do a rebase and we'll talk about them next time.
+

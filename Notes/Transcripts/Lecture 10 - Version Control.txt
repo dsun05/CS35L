@@ -1,0 +1,346 @@
+So today, I thought I would talk about version control. And apologies for my voice.
+
+So, to some extent, version control is about several different things. Okay? One of the things it's about is backups. You want to know not only what you have today in your software project, but what you had yesterday and last week and last year and that sort of thing. So you want to keep a backup of what you've done in the past.
+
+There are other things. Right now I want to focus on that backup thing. Because the idea that you need to have backups of your stuff is a much more general idea than the idea of just doing version control. You can almost think of version control as giving you backups for your source code and that sort of thing. But you also need backups of other things.
+
+So I want to take a little bit of an aside and just talk about backups in general. And then we can come back and talk about how that more general topic fits into this version control topic. And to some extent, this backups thing is something I'm sure you've heard yourself. Right? So, for example, sometimes I'm asked to comment on the suitability of a course that a student took at another university to see whether that course is close enough to R, CS, whatever, right? And so I ask them, oh, can you give me a copy of the project that you worked on in that course at Simon Fraser, whatever other university is? And they say, oh, no, I threw it away. I don't have it anymore. And then I say, Well, that's too bad. Looks like you'll have to take the course here again. Right? Because they didn't do backups. Right? Don't throw stuff away, I suppose, is one lesson. But as you can imagine, this turns into kind of a hassle. There's something else going on here about the difference between version control in particular and backups in general. Which is that normally we think of version control as something that software developers do. Developers do version control. Whereas backups is something that the operations staff does. The operations staff is in charge of taking backups. For example, the CSNET operations staff makes sure that all the files that you have in your home directory on CSNET are still there, even if tomorrow the main of CSNET die, your stuff will still be there. The operations staff does that. So there's sort of this traditional dichotomy between developers who are the fearless sort of people that are developing new things. They're the researchers, they're the cutting edge people, they get paid more. And the operations staff whose goal is to maintain things, to keep things going the way they were.
+
+to make sure nothing gets lost, to be stable. And to some extent, those are two quite different motivations and historically, many companies and development organizations therefore have two different groups of people. The developers and the ops staff. We have that at UCLA. There, however, is a different school of thought.
+
+of thought says you shouldn't have people sort of partitioned into these two groups. Every developer should be able to maintain their own stuff. Every person who maintains things should be able to develop new things. You have a single DevOps staff that can do both. And to some extent, when I'm talking about backups here, I have my DevOps hat on, which is a way that I ran one of my startup companies back when I was still running companies. It works quite well if you can get the right people. You might see one kind of organization or another in your own work, but at least you should know about the DevOps people. All right, so let's think for a while more from the operations side and think about backups and think about why we want backups.
+
+The short version is that we want to recover from failures, right? In fact, the whole name backup, it's like having a backup strategy, right? If I'm trying to get to UCLA and the bus is late for my exam, I have a backup strategy. I'll call my friend and they'll give me a ride.
+
+like that or I'll take an Uber, right? That's your backup strategy and that's really what backups are. They're for recovering from failure. Just as when you're doing version control, one of the reasons you use Git or a different version control system is you want to recover from failure in your software development project. When you're an operations staff person and you're trying to think about how to recover from failures, one of the first things you should do before you worry about you know your backup strategy and that sort of thing is what kind of failures right?
+
+What's your failure model?
+
+This is crucial if you don't have a failure model if you don't know what can go wrong You won't have a good backup strategy. It's possible to go off on the deep end and spend an enormous amount of time and money coming up with a perfect backup strategy because you can't think of failure models and then you waste a lot of money that way. You need the failure model. You need to know what you're worried about, what's going to fail in order to figure out how to do backups. So, very simple failure model. One possibility is that you've got your stuff stored on a flash drive, or disk drive, doesn't matter, and the drive fails. The stuff was on your laptop, the laptop has a single flash drive embedded in it, that flash drive goes bananas. That's going to be a particular failure model. And you're going to need to think about that when you want to come up with a good backup strategy. But this is not the only kind of failure. Another possibility is that you mistakenly deleted a file. Or maybe you didn't delete it. Maybe you just trashed it.
+
+You typed CP space A space C, you meant to say B, you overwrote C, you've lost C, right? So that's another sort of thing you have to worry about if you're doing backups. Another possibility, one that I hope is less likely, is that your attacker does that.
+
+Someone breaks into your laptop, starts running programs on your behalf, takes over control of the files on your system, and deletes them or modifies them in mysterious ways or whatever. I hope this never happens to you. As far as I know, it's never happened to me, but then how do I know that, right?
+
+another sort of thing you have to think about. Any other failures you might need to worry about? If we just restrict yourself to your laptop without worrying about anything extensive, any other kinds of failures, right? Yes? Right, so you have a software bug.
+
+And that software button does the above. I can think of one other thing, right, which is that my wife has an account on my laptop. So in some sense she's an insider. And so another possibility, which, right, you have sort of an insider.
+
+Normally one thinks of outside attacks, but you at least in general have to worry about inside attacks. Suppose someone pays off the janitor in Murphy Hall who has access to all the backup tapes containing all of your financial information and grades and all that stuff, right?
+
+change your grade and make it worse. That's going to be sort of an extreme case. Let's hope this doesn't happen to you either. So these are the sorts of reasons that we think about in sort of a more general sort of purpose of why things could go bad. I want to talk a little bit more about this problem because this one is somewhat underestimated.
+
+How many of you have had a flash drive fail on you sometime in the last year? Now they've done statistics on this in large installations. People like Amazon and Google and those sorts of things have these enormous football field size sort of facilities.
+
+with lots of servers. The servers have a lot of flash drives and all that sort of thing. And disk drives as well because they're cheaper. And a reasonable guess at a failure rate for these things is like 1 to 2 percent annualized failure rate for flash drives. And maybe double that for disk drives.
+
+What do I mean by AFR? That's short for annualized failure rates. And that means using sort of testing and measurement, the drive manufacturers, or in the case of Amazon, they don't trust the drive manufacturers, they go check it themselves, estimate that one to two percent of your flash drives will fail during the year if you're running in a server environment, which keeps these drives pretty busy, right? They're busy 24 by 7, lots of reads, lots of writes, right? You are running the flash drives in the region where they're supposed to work. You're not exceeding their lifetime rating or that sort of thing. They still fail anyway, right? That's the failure. So we need to have a system that will survive this kind of failure rate. And inevitably that's going to involve having backups of some sort.
+
+You can't have 10,000 drives sitting in a room and expect them all to be working at the end of the year. It simply won't happen.
+
+All right. So, okay. What's a simple approach to this?
+
+Well, a very simple approach is instead of just maintaining one copy of your data, always maintain two copies. Two copies of everything. And so the program may think it's just writing to a file, but under the hood, The operating system or some library part of the program makes two copies of the file. You always do everything twice. This approach to backups is called mirroring. And a downside of mirroring is that drives up your storage costs by a factor of two.
+
+And you know that's money that you have to spend. You also have to spend money not only buying the drive, you have to spend money powering it on. Right? So it's not simply a one-time cost, it's a recurring cost. And so, you know, although this approach is very simple, it's going to be somewhat expensive. But let's just take this simple approach for now.
+
+because I don't want to get anything complicated in. And even in this simple approach, let's suppose we have very good flash drives. So we got the cream of the crop flash drives. We have a 1% annualized failure rate. And let's suppose we use mirroring. So each drive is really two drives and they contain identical copies. And if one drive fails, we can use the other one.
+
+What's the annualized failure rate for our pair of drives now?
+
+So in other words, I want to know what's the AFR for mirroring.
+
+Two flash drives. Right? Each with a 1% AFR. Hopefully, it's less than 1%, right? That's why you spent all that money and bought two of them. But what is it going to be? Any thoughts?
+
+Yes.
+
+So one possibility is that it's a 1% annualized failure rate.
+
+You square that because you say, for me to lose my data, both drives have to fail in the same year.
+
+And the probability of that is probably of one failure times the probability of the other.
+
+Is this the right answer?
+
+It's the answer I came up with first.
+
+So it's okay to come up with it. But you should be thinking, wait a second. This isn't right. What's wrong with this particular model? Yes? Right. So one problem with this approach is this assumes that the drives fail independently.
+
+But it's all too common to get a batch of bad drives. Even if the average AFR is 1%, this particular batch is 5%. And if you take that into account, this number isn't right, it's too optimistic. So this assumes independent failures And that assumption is optimistic. We can't assume that. Because we can't assume that, the actual number will be greater than this. Is there any other reason, though, that this number is wrong? And in fact, to some extent, there's a more important reason that this number is wrong. This number, in some sense, is way too pessimistic.
+
+It's not too optimistic. Yes? Exactly, right? This also assumes that we don't replace bad drives. Which means this is a pessimistic assumption. In CSNAT, They use mirroring and other strategies. If one of the drives goes bad, a light goes on in the rack containing the drive and the cell phone of the chief operations person gets a ping, a text saying, "Drive number 27 in rack 32 has gone bad. Please replace it." And what the staff member will do is go over to that rack, pull out the the operating system will then start busily copying data from the remaining good drive to the bad drive once that copy is complete then we're off to the races again so really if we want to fix this problem of being too pessimistic the annualized failure rate is not going to be 0.0 1.0.01 squared, it's going to be something like this. Here I'll assume independent failure, so I'm going to be optimistic this time. But this is going to be 0.01 times the probability that we fail before the entire replacement process is done, before we copy the data from the good drive to the replacement drive. On modern drives, That copying action might take a while. It might take, say, ten hours, including the time that it takes to pull out the one drive, push in the new drive, or maybe the guy has to drive in from, you know, a long ways away and go fix it and that sort of thing. So we take sort of the driver placement time.
+
+And that's what your annualized failure rate would be. This is somewhat optimistic because it assumes independent failures. But assuming that this is like this number here might be, I don't know, 0.01 or maybe even smaller. So it's going to be a much better number than what we saw earlier. This kind of thinking is the kind of thinking you routinely have to do when you're coming up with backup strategies. You not only have to have sort of a model for what can go wrong, which we've sort of had here, we need a model for something else. In order to come up with this number, we needed to have a recovery model as well.
+
+both a failure model and a recovery model in order to figure out how good your backup strategy is, whether it's going to be feasible, whether it's going to catch the likely mistakes and that sort of thing. And one of the most common mistakes people make when they're developing backup strategies is they forget to do the recovery model. So when I was in private industry and my engineers built a system that had backups in it, one of the standard things I would do is I'd walk up to the rack where it was doing stuff, pick a random device in the rack and unplug it. And everybody else would cringe.
+
+That way we can test whether or not they could recover from having a device failure in the system. If we didn't do that testing, we would never know whether recovery would work. So, one way to think about it in your own work is what's your recovery model if the drive in your MacBook goes bad?
+
+And whatever it is, don't just think it, do it. Lose your MacBook for a weekend and get your work done anyway. If you can't do that, how do you know your backup strategy is going to work? You've got to try it out. Now I've been focusing on backups in general.
+
+I've made also apply to version control because one of the reasons you do version control is to do backups. So all the stuff we've talked about here, believe it or not, actually are relevant even if you're using Git in the cloud somewhere and you don't have to do backups yourself because somebody's got to do them, even if it's not you, and even if somebody else is doing backups in response to hardware drive failures, they're not necessarily going to save you from this other stuff. You'll need a backup model and a recovery model for something like that. All right, next topic. Again, I'm going to start by talking about backups in general. What do you backup?
+
+If we're talking about systems that have to be really reliable, such as the air traffic control system in Philadelphia, then what you back up is not simply data, it's everything else. You have to have backups for the communication links, you have to have backups for the displays on people's desks, all that sort of thing. So we have to back up the whole system.
+
+But for today's lecture, I want to focus on just sort of the data part of your backup. So we'll just look at data. And obviously one of the things in a software development system or any other kind of system is you've got to back up all the data in your system. All the contents.
+
+of all the files. That's one way to put it. I want every file, you look at the contents of the file, I want to have a backup copy of the contents of the file. Notice that one of the assumptions here is that files contain all data of importance and if there's a part of your system state that's not stored in a file, it's not important enough to be backed up. So we're assuming here that the files contain all sort of important persistent state. Not every system's like that, but many systems are and will be sort of sitting in the sweet spot if we make that assumption. Okay, so we want to back up our data. We back up all the contents of all the files, but that's not enough. Even if all we're caring about is the data, file contents isn't going to be enough to recover all the data. For one thing, you're going to not only keep track of the contents of the files, you'll want to know what the files names are and what the directory structure is. If you don't know the directory structure and the file names but you have all the file contents, things are still going to be pretty dicey.
+
+when you try to recover because you'll have the data but you won't know where to put it. Is there any other sort of data relevant information part of the persistent state that you should back up? Yes. Passwords. Oh, that's an excellent thing. I'm going to put that in. Passwords or keys, that sort of thing.
+
+This is a very, without the keys or the passwords, your system won't work. And yet, and yet, one of the biggest mistakes many people make is to take these passwords and keys, stick them in a file somewhere. A lot of some of the biggest break-ins recorded have involved people who mistakenly put passwords or keys into their files and then publish the file content.
+
+on the internet. What a mistake. And it seems like it happens every week. So this is a delicate matter. That's more of a computer security thing. So I'll put it in parentheses now. I'm not saying it's not important. It's beyond the scope of this lecture. Anything else? Yes. Very good. Right? So we need to have sort of permissions.
+
+We need to know who can access the file, who owns the file, what's the file group, the access control list, you know, basically what LS minus L tells you about who can access the file. Yes? The which? The backup version. Ah, right? So you also need, and that's what's being said, sort of meta information about the backup itself. So this might include a version number, it might include a timestamp, it might include who made the backup, all that sort of thing. None of this stuff is in the data.
+
+It's information about the backup. And you'll want to save that as well. You might, you know, this might be pretty important stuff later on when you're trying to figure out which backup to restore from and all that sort of thing. Anything else? Yes. So for like the part where you mentioned like directory structure of file names provisions, could we just generalize that to all the metadata about the files that we have? Pretty much, right?
+
+But one way to think about it is if LS minus L tells you something about a file, you'll want to sort of restore that information about that file. So LS minus L tells you about permissions, tells you about file names, but it tells you some other things as well. For example, timestamps.
+
+was modified, that's something you want to back up. It'll also tell you link counts. Right? And maybe if you use an "i" here, you can then restore the file and all the hard links to the file if you keep track of the link counts and you keep track of the "inode" numbers, right? So link counts I know numbers. Another thing that LS minus L will tell you is if you have a symbolic link, what the contents of that symbolic link is. So symlink contents. And more generally, it will tell you what the type of the file is.
+
+a regular file or directory or symbolic link or some other type. All that stuff you really need to save in your backup. And if you're not saving it you're not really doing it right. So if you're designing a backup strategy for something else, something that's not a Linux file system, you also need to come up with this list of everything you need to know. And I should warn you that it's easy to forget stuff. You start writing it down and you say, "Oh, I've got it all now." And then later on you discovered, "I forgot to keep track of hard links." Now when I do a restore, all the hard links are broken and things stop working, right? So try to be very complete here when you're figuring out what you should back up. Alright? So, there's another way to ask this question what to back up. So far, We've been thinking of saving just one state. So we might say, "Okay, I'm going to make a backup of everything on CSNet as of noon today." And I'll have a backup so that I can recover the state, you know, the noon today state whenever I feel like it because I have a backup. But obviously that's not good enough in general. We need to do backups periodically.
+
+Another way to think about it is when to back up. Ideally, every time anybody made a change to a file, we'd have a backup of the entire system state afterwards. But that's too expensive. CSNAT doesn't do that. Almost nobody does that. We can't afford to have this ideal state. So we have to decide when to back up or another way of putting it is how often. And we want to have a strategy for doing this sort of thing reasonably efficiently. We can't afford to do it sort of all the time, but when we do do it, we can to make our backups cheaper than they would otherwise be.
+
+Right? Suppose we decide to do something like this hourly.
+
+Right? That means is if a meteorite hits CSNet Central, you'll lose up to an hour's worth of work.
+
+Well, if you take a look at all the files at 4:00 p.m. when this class started and compare them to all the files at 3:00 p.m. when you guys were all doing something different, yeah, there were a few changes, but most of the files are the same that they were before. So a very common way to sort of do, say, hourly backups is the idea of doing incremental backups.
+
+The idea here is that if we're doing hourly backups, don't make a copy of every file in the system every hour. That's too expensive.
+
+Just make a copy of the files that have changed sometime in the past hour. Yes?
+
+Because I'm assuming we have finite space, when do we decide if our storage is full for backups? Yeah, right. So you have sort of the primary storage here. This holds your files, right? And, you know, let's say it's, I don't know, one beta byte or something. And then you have the backup storage.
+
+And this stuff will be slower and cheaper. This might be flash. This might be hard disk or even optical tape or something. And let's say it's, you know, 10 petabytes. Well, you can make a backup. And then later on, you can make an incremental backup, just the files that have changed. But eventually, you're going to run out of space, right?
+
+Backup Storage. Nobody has that. So at some point, you're going to have to figure out, you need to have sort of a backup rotation strategy. And what the backup rotation strategy will do is it'll take your backup storage, which presumably is about full, and start throwing away things.
+
+You'll say, I don't need hourly backups from 2024 anymore. Just daily backups is good enough. Or maybe even weekly for the old stuff. And so when you do that, you'll have to have some way of organizing your backup storage so that you can reclaim some of the space, some or most of the space. And figuring out how to do that efficiently and all that sort of thing is a fairly developed subject that we won't have time to go into today but that's certainly something you'll need to do. Question? Right. So if you have both of these strategies you're going to have to make sure they're compatible with each other. So for example let's say you just have a bunch of incrementals and you may and you say, "I don't need this anymore." This guy, an hour from last year, who cares? You can't simply discard it though, because if you discard the changes that you made from July 1st to July 2nd, and you lose your primary data, you can't recover your data anymore. So instead of simply deleting this, what you'll have to do is combine these these two incrementals into a single incremental that's smaller than the sum of the two because most of the time you're changing the same files. Then once you do that you'll be able to recover some space. So that's the kind of algorithm that you have to think about. Other comments about these backup strategies? All right. Let's see what else do we have here.
+
+Let's try doing backups more cheap. And we've already talked about one, which is to do incriminals. And we've talked about another, which is to have some way of rotations, right?
+
+And really what we're talking about here is removing old backups. With the goal of lessening the amount of backup storage that you have to buy. Another way you can do cheaper backups, and I sort of alluded to it here, is you can do them less often.
+
+If you decide to do, say, every eight hours rather than hourly, that's going to lower the cost of your backup approach. Of course, at the cost of you might lose more data if something goes bad. All right. So another approach, and I sort of hinted it here, is backup to a cheaper device.
+
+Typically your backup space might be hard drives which are considerably cheaper per byte than flash drives even today or they might be something even slower and even cheaper. Magnetic tape is still in use for backups. I think CSNET still uses it. It's really slow to access an arbitrary spot of the backup you have to wait for a sequential device to get there.
+
+But since we don't need to access it very often, slowness is not such a big deal. Another possibility, which may work for you and may not, is do remote backups. So you hire someone else to maintain your stuff, your backup copy, and you back up to that remote service.
+
+When done right, that can actually be cheaper than doing it yourself. To be honest though, what I found is if I have a lot of data, I can do it cheaper than Amazon can. So this approach tends to work better for smaller organizations where you don't have time to establish a backup strategy. But if you take a look at, I don't know, what does our Huffman 2 cluster do? They don't do remote backups. They do it themselves.
+
+And let's see what else. The idea of incrementals, you can optimize this even more. In the simplest form of an incremental, if a file changes, you back up that file all over again.
+
+The backup of a single file is to instead of storing the whole new file, you store just the changes that will let you go from the old file to the new file.
+
+And the way this can be done is a way that you can see reasonably easily if you just use the standard diff program. So we can take a file here. I don't know.
+
+cp etc OS release OS release new. We'll edit that file. And I'm going to get rid of the pretty name and I'm going to add something down here. And then I'll have, I don't know, up here I'll say delta 3.
+
+Now what I can do now is I can say let's just look at the diff listing. And what did I do now? Oh, I have to save it. Let's try that again. And what diff has done here is it's given me a compact representation of the changes between the old file and the new file.
+
+What diff outputs is, first, changes to the metadata. The first two lines, or three lines, I should say, tell you, oh, we have a changed timestamp, we have new file names. But then, when we look at the data, we see a minus in front of deletions, and a plus in front of insertions.
+
+and insertions. And in front of the deletions and insertions, we see at sign lines that tell us sort of some of the line numbers involved, right? It's a little hard to see here, but the line numbers here say where, right? This is the locations. And given the old file and given this diff listing, we can then produce the new file.
+
+and the diff listing is shorter than the new file, which means that if we want to do an incremental backup, all we have to do is save this diff listing. So an approach here is you use some kind of differencing algorithm and just store that resulting algorithm. Of course, this approach assumes that we have a way of recovering the new file given the old file and the diff, right? But there is a program on Linux that will let you do that, right? It's called the patch program. So if you run something that looks like this, this means essentially, you know, set D to be the new minus O. That's essentially what's going on here. You're computing the difference between the old and the new and you're storing it in D. Later on, you can say something like this. What this does is it, I'm sorry, this says something like O equals O plus D.
+
+that modifies O in place and as a result O prime equals N. We will have restored the new version of the file. Let's try that. I haven't done this in a while. Let's try that. diff minus U, etc. OS release, OS release new, D. That's our difference file.
+
+copy, etc. OS release to O, and then we can say patch O less than D, right? And now we can say diff, etc. I'm sorry, OS release new O, and we can see that we've now updated O to be an exact copy of the modified version of the file, right?
+
+So this is the sort of approach that a lot of backup systems will use. They won't necessarily use diff. They'll use their own algorithm for computing differences, one that is probably more efficient than diff. But it's the same basic idea. Just do the changes, right? And essentially, you can take any text file and transform it into a different text file simply by doing deletions and insertions.
+
+at the right spot, right? That sort of should go without saying. So this suffices to sort of store any kind of difference you might want to do. Any questions about these backup strategies? Question in back. Well, caching is a little tricky, right? Because part of the point of a cache, if it's done nicely, is that you don't know it's there, except that things go faster. And so with that in mind, using a cache as part of your backup strategy is going to be a little tricky. In some sense, the cache is a backup of your main data, right? So if you lose your main data, and if it's still in the cache, you still have it.
+
+But in another sense, trying to think of it that way is backwards. Caches are supposed to be small and fast. Backups are supposed to be big and slow. So a better way to think about it would be something like the following. The cache is your primary copy of the data and the stuff that's sitting in a file somewhere is the backup copy. That's a more productive way to think about it.
+
+So is DIF dangerous because you might lose data?
+
+Yeah, because you store the entire copy, so if one of the.
+
+Oh, yeah. And to some extent, that's sort of what's going on here, right?
+
+If you do incremental backups, and just pure incrementals, no garbage collection anyway, right?
+
+You want to recover this state, all of this stuff has to be perfect, right?
+
+If any one of these things, the original copy or any of the incrementals go bad, You're toast. You won't have the accurate data later on. So in some sense, an incremental approach places more emphasis or more requirements on the reliability of your backup storage. It all has to work. So this diff method is, you know, you can sort of combine it here. You'll need a way, for example, for this sort of thing, you'll need a way of taking two adjacent diffs and combining them into a single diff that's smaller.
+
+Right? And there are algorithms to do that and you can apply those algorithms.
+
+Yes, but it will require some thinking.
+
+Other comments?
+
+All right, why don't we take a break and we'll start up at, I don't know, two or three past.
+
+Gracias, gracias.
+
+All right, let's start up again.
+
+So before we leave the topic of backups, I have a few more ideas for making backups more efficient or more useful or safer or anything like that. And again, these are general techniques that could be used in any kind of backup situation and we'll see later that Some or most of them are also used in version control and in Git. One is ddc. And the idea here is pretty simple. In order to make your backups cheaper, delete some data before you back it up. Don't backup everything.
+
+Just back up the stuff that you really need. So for example, if you have a software development project that's written in C++ and you've built the program and you have a lot of.0 files and a lot of executables floating around, you don't need to back those up because you can build them again from the source code. So basically you remove *.0 you do backups, right? And when done right, this approach can save you a lot of time in backing up because you don't waste your time backing up stuff that you could easily sort of recompute later. Another option that's a little trickier but is more general, data grooming often requires help from the user. This option doesn't. It's called deduplication.
+
+And the basic idea here is typically done at the block level.
+
+So the idea is that your file system is divided into a sequence of fixed size blocks.
+
+Maybe, I don't know, 8 kibbytes, something like that.
+
+When you issue a command that looks like this, you're copying from file A to file B. Ordinarily, what would happen at the block level is A can be thought of as pointing into a bunch of blocks. Over here, there's B space here. And what this copy operation will do is it will copy all this data from here to here, copy all this data from here to here, and so forth.
+
+and so on. Then when you're done you have to back up both A and B because there's two copies. What deduplication does is at the block level the system notices that this block and this block are the same. They have the same contents. So it doesn't actually, when you say please copy the first block of A to the first block of B, the system doesn't do this. It doesn't make a copy. Instead, it just notices that the blocks are the same and it says, "Oh, I'll just have a little pointer here that points to this block." Similarly, A is actually implemented as a series of little pointers to where its blocks are actually sitting. And over here, you just make copies of pointers to that block.
+
+In other words, if you look at the actual flash drive or disk drive, even after you've said copy A to B, it hasn't actually made a copy. It's just move pointers around. Later, if you go and change either A or B, right, let's say you use, you know, Emacs on A afterwards and you edit, save. At that point, it will break the links. It will say, "Oh, yes, I guess we now have an alpha prime, A points to that. Oh, but these other guys are the same, so I'll just," you know. In other words, you don't actually create a new block on your flash drive or on a disk unless its contents differ from a block that's already there. The goal, ideally, is that if you look at your drive blocks, every one of them is unique. No two drive blocks have the same contents. And if you do it that way, first off, CP is really fast. You think you're making a copy of a one terabyte file, you're not doing that. You're just creating a bunch of pointers to the existing file. And second, the cost of backups of the result is really cheap. Until you actually go make changes to A or B later, you only have to back up one copy of the two files. This feels a little like hard links in a Linux file system, right? You have two pointers to the same file. But this is more powerful and more general because it's done at the block level. And you can have two files that are almost the same, but they just differ in one block. They'll share most of the data at the You can't do that with hard links. Any questions on how you can use deduplication to make backups cheaper? Can you see a catch? Yes. Yes. Yeah, the strategy here is called copy on write.
+
+It's usually spelled this way. Right? So in some sense, you're telling the system make a copy. It's being lazy. It's not actually making a copy until it's forced to because you make the copy different from the original. At that point, it says, "Okay, I guess I really got to make a copy." But until then, it's lazy and it just creates a pointer to the old blocks. Yes?
+
+Usually these things are at the block level and they don't use a diff algorithm in that sense. Each block is just a blob of data and they don't try to do a diff on this block versus that one. So, and this approach is, I would say it's probably becoming more and more popular. I see more and more of this, several Linux file systems do this.
+
+this at least in some of their file systems. But there's a downside. A downside is the following. You may have done this because you were worried that your drive would fail or that part of your drive would fail. And you may have executed this CP command to make your system more reliable. You say, oh, now I have a backup copy of A. If my drive fails, I can go look at B and it'll tell me what was in A. If the underlying file system uses deduplication, your assumption is incorrect. Right? Because if one of these blocks fails, you've lost both A and B. Yes? Oh, yes. If you just remove A or, yeah. But the point is that if you have a hardware failure at the lower level, you've lost both A and B here. Right? Even though you were trying to increase reliability, You didn't do it. Yes?
+
+So the user can't revise that?
+
+I offhand don't think so. Well, yes and no. That is, this sort of thing is only done within a single file system on Linux. So as a user, you can say, I'll copy it to a different file system which will have different devices backing it and then you will know that you can be okay. Yes?
+
+So other than like a hard drive failure, when is this useful?
+
+What is deduplication useful for? Well, two things. First off, it makes backups cheaper. Second, it makes your primary storage cheaper. You can store more stuff in your flash drive if you use deduplication. Third, it makes copy go faster. CP can run really fast here because it's only copying pointers, not the actual data. So there's a lot to like about deduplication. You know, it has some down SID: Yeah. Each block in B essentially is a pointer to the same block in A, but you haven't actually copied the data.
+
+Well, let's say you do a CPAB, right? And afterwards it sort of looks like this. And A is really just this array of pointers to these blocks. They might be out of order, it doesn't really matter. B is really just to set up the same pointers, right? So later on you edit A. The system allocates a new block to contain the edited version changes this pointer to point to here, but B still points to the original one, right? So it's still there. And if you, at this point, say delete B, you remove this file, then the system can say, oh, well, we don't need this thing anymore. We can reclaim this storage. These guys are still being used by A, so we'll keep them around. Other comments about deduplication? Yes.
+
+Oh no some systems try to do it that way that is the look to see if you're doing a copy and they'll do deep duplication that way other systems whenever you write a block they have a catalog of all the blocks in the system and they'll reuse some block if if they find one that maybe somebody else wrote it they don't care right because they're going to use copy on right later either approach can work I think typically it's more the former approach because the latter approach can be expensive you have to have a catalog of all the blocks in the system other thoughts yes say a louder please oh well I know numbers are little numbers here's I know number 93 and here's a 97 they represent in this system they represent these tables of pointers to blocks okay other comments yes So you're saying how do we combine this with the idea of rotating backups, rotation? Oh, well, it depends on whether you're doing the rotation at the user level. So the user sees CP commands and that sort of thing, right? If you're doing rotation at the user level, it's up to the user to do the rotation. The block system doesn't care. It just copies.
+
+blocks the way it would normally do it. On the other hand, possibly your low-level block system is trying to not just do the file system but also do backups. In that case, things get much more interesting and you can have combined algorithms that will do both. CSNAT does that. You guys have done this stuff, right, on CSNAT? I mean, if I log I think I can log into CSNet.
+
+All right, let's do this.
+
+And then, so you know about the snapshot directories.
+
+Do they tell you about this stuff in the labs?
+
+No.
+
+Oh, well, let's see if we can get into CSNet here.
+
+All right.
+
+There we go.
+
+Alright, so what I can do, if I'm in any directory, is I can go into a snapshot subdirectory and if you go into that subdirectory you will see snapshots of what your directory looked like in the last seven hours and then in the last seven days because they do nightly backups and in the last two weeks so if I go to say weekly dot weekly zero Here are all the files that I had last week exactly with the same metadata and contents that they had back then. The reason that works is that the file system my home directory is on and your home directory too has a low level sort of block system like this which also does backups and every hour they do a snapshot and then after a while they start throwing away old hourly snapshots but they keep one a day around and then after a while they throw those away but they keep one a week around for a couple of weeks. So you can use this to recover the state of whatever you had on CSNAD up to two weeks ago. Right? And that's based off of this kind of technology. All right. So deduplication. Next idea, and this should be obvious, is compression.
+
+You don't need to back up the data as is. You can use a lossless compression algorithm like GZIP say or there are several other algorithms like that. That's going to slow down your backups. It'll slow down accessing your data later but that's okay. You don't need super speed when you're making backups or retrieving old backups and you know some compression algorithms are so fast with today's CPUs that The cost is relatively small. So a lot of backup systems these days will use compression and they'll just store the compressed data. A common companion to that is encryption. We might want to encrypt the data that is in the backup area because maybe we don't trust the person who manages our backups. Maybe we don't trust Amazon, so we will encrypt our data before we put it on the Amazon file server. Or we might not trust the janitor in our machine room. So we will encrypt the data before we put it on a device that the janitor has access to, and so forth and so on. Two more ideas. One is staging.
+
+Under this approach, you don't simply have primary data and backup data. You have multiple levels of backups, right? So you can go from flash, you back that up to disk, hard disk, and then you back that up to tape. Tape is the slowest and cheapest. You have gobs of it though because it's so cheap.
+
+Disk is more expensive but still a lot cheaper than flash and so you back up from flash to hard disk when the hard disk gets full you back that up to tape a lot of big organizations will do that sort of thing one more idea is the idea of multiplexing under this approach a single backup device can back up data from lots of different sources. You have a multiplex connection to your backup area and lots of different primary sources are sort of backed up into the same sort of backup device. That way you only have to buy one backup device instead of, you know, one for every primary device and that sort of thing. One more idea to make things cheaper is the following.
+
+I mentioned earlier that you don't really know if your backup system is working unless you test it. You gotta test it. Testing sort of comes with the territory. But you want testing to be cheap. You don't want the tests to be expensive. The obvious way to test if your backups are working is to make a copy of your data, right? And then go back five weeks later and check that that copy matches what's in your backups. But that's expensive. Now you've got to make a copy of your backups? I mean, what's that all about? So a standard way to make testing cheaper is the idea of checksums.
+
+This is sort of testing and recovery and making it go faster. The idea here is fairly straightforward. Whenever you make a backup of your data, you compute a checksum of that data. That checksum can be a small number, maybe it's only, I don't know, 256 bits.
+
+number in a safe place. Later on, if you want to make sure that your backup copy is correct, you compare it to the checksum. If it matches, you have a very high probability that the backup system works, and if it doesn't match, you know you've got trouble. So it's very, very common for these backup systems to contain checksums to make sure that everything is sort of working fairly well. All right, well, I've beaten... Yes, question?
+
+You have to make a copy of the checksums, right? But you don't have to make a copy of the data, right? And since the checksums are small, I mean you can have a terabyte file with just the small checksums. So that's going to make your testing process a lot cheaper to do. All right, well, I've beaten the topic of backups to death. Let's go to version control.
+
+We're talking about version control. To some extent you can think of, well, we got to do backups. But we got to do some other stuff as well. If your version control system only lets you access old versions of data, it's not a very good one. We need more facility here than we'll get from a standard backup system. Alright? So first off, we want efficiency for software development.
+
+An ordinary backup system is willing to be slow if you want to get an old sort of copy of something, because you normally don't want to do that.
+
+But in a software development system, it's very common to want to look at an old version of something, because you're trying to track down a bug or something like that.
+
+So the efficiency concerns of a version control system are different from the efficiency concerns of a standard backup system. We need to tune it better for what we want to do as developers. The other thing, and this one is a little harder to nail down, we want it to have more utility for developers. It's not just we want some operations to go There are operations that we want in software development that we typically don't even think of needing at all in a backup system. And we'll be looking at both classes of operations here when we look at, you know, what sort of Git needs to do. All right. So what are some of these new things? I mean, obviously, we need backups. And the backups, we need to do data and netting.
+
+data. And we'll expect that from our version control system. We'll expect our version control system to not only record the contents of all the files, but the directory structure and the timestamp and the ownership and all that good stuff. But we have some other things. So, for example, what about file reading?
+
+In an ordinary backup system, if you rename a file from A to B, the most common way that that's going to be recorded is A went away, B came into place. Right? The difference is you deleted 10,000 lines from here, you went and inserted 10,000 lines over there. The backup system won't necessarily notice that they're the same 10,000 lines or maybe with some small changes. Right?
+
+file renaming, which happens reasonably often in software development, we want this to be, you know, we want this to be sort of efficient and we want it to be useful. We want the backup system to tell us, you know what happened here? Somebody renamed a file. We don't want it to tell us file X got deleted and file Y got created. And that's something that a version control system should give us even though A backup system won't. Alright. Another thing that we'll want is we'll want metadata about the development history. Of course we want metadata about the files themselves. We'll want to know the last time a file changed, that sort of thing.
+
+But we'll also want to know what the developers thought about the various versions. Classic example of this is, you know, we may say, "Oh, I want to know what version 3.5 was." But this number or this thing here, this name, is a name that may not live anywhere in the social code itself.
+
+that we maintain about the development history somewhere else. In get, this thing is called a tag. And tags are not part of your data. They're part of your version control metadata. And we're going to have to keep track of that and have facilities for dealing with the metadata. A third thing that we'll need, this is worth blackboard here, is the notion of atomic And the basic idea here is as follows. If I want to do something like this at the shell level, I can do that, right? C, P, A, B, R, M, C. So that's two changes.
+
+And a backup system that is sort of not designed for version control, you might think, "Oh, well what's going on here is we have change number one and change number two." And actually, if you look inside how CP operates, the way it does is it reads a block from file A, writes it to B. Reads another block from file A, writes it to B.
+
+So really change number 1 here is divided into change number 1a, 1b, 1c and all that sort of thing. One for each block of data that you're copying from a to b. Now the problem here is that your backup system may pick some random spot in here, say right here, and say okay I'll do a backup right here.
+
+that in your version control history. Because what will happen here is you'll have some software in which, you know, file B is partly created, file C has not yet been removed, and that could be a system that's not internally consistent. Maybe it won't even compile. What you want instead is you want to do all of these changes at once.
+
+That is, you want to make sure that you have a backup before you do anything, right? So you have this guy. You also want a backup of everything, you know, after you've done both commands, after you've copied all into B and you've removed C, but you don't want to have any intervening backups. You never want to see that inconsistent intermediate state.
+
+A good version control system will give you this. It will let you edit a hundred files, change them all in lots of different ways, and then say, "Okay, I'll let you sort of install all those changes simultaneously and all at once." And if anything goes wrong in your attempt to make that change, then nothing changes, right? It's all or nothing.
+
+Very important property of get and most other version control systems. You don't want to have intermediate states where things don't work. Alright. Next thing that most version control systems give you is a way of integrating the version control that they do with other parts of the software development process that you do. In other words, the version control systems are tailorable. They won't just keep track of history. They'll also do other things while they're keeping track of history and those other things are under your control. In get, these things are called hooks and you have pre-commit hooks You have post commit hooks. And you have hooks at other times. What's a hook? A hook is, in a sense, a callback from Git to your own code. If you have a pre-commit hook in your project, whenever you or somebody else decide to make a commit. That pre-commit hook code is run. If that code doesn't like the commit, it will fail and git will refuse to make the commit. If the code likes the commit, it can tell git some information about the commit. So this is a way you can tailor git to work well for your project as opposed to some random vanilla project. Most projects of any size make, you know, You can use a pre-commit hook to do something really simple. For example, suppose you're developing Python code and different developers disagree about how wide a tab character is. And as anybody who's written Python code knows, tab characters are a gigantic pain. You can install a pre-commit hook that basically says, tab characters anywhere. And that way people won't make any changes that insert tab characters into your Python files and everybody will be happy. Except for the people that like the tabs, right? That way you can have a uniform style in your project. Most pre-commit hooks are fancier than that but you can see how this is a way of making your project sort of run more smoothly. Alright. Another thing you can do.
+
+is format conversion.
+
+I hate format conversion, but I feel I must mention it.
+
+The basic problem here is Microsoft.
+
+For some reason, Microsoft lights text files and source code files and all that sort of thing.
+
+they like the lines to end in carriage return line feed, right? Or backslash R backslash N if you're writing C code. The same part of the universe just has line feed, right? So this is Linux and Mac OS and Android and everybody else, right? Now suppose you have some poor developers that are stuck in Microsoft development platforms. They need CRLF at the end of their lines.
+
+Everybody else needs just plain LF. Neither side can use the other side's format for whatever reason. In that case, Git will say, "Okay, you're stuck on Microsoft. I'll put carriage returns at the end of everything," and all that sort of thing. This sounds silly, and in some sense it is silly, but if you tried to do the format conversion yourself, you would find that it turns into a nightmare and it's nicer to have get sort of deal with it for you. Let's see what else do we have. Sign the commits. This occurs when you're working in a large project and with people all over the world making changes to this project and it's so large not everybody knows everybody else.
+
+And to some extent, do you trust this guy in Outer Mongolia who just made this commit? This part of software development is, in my mind, it's getting worse and worse. There have been some fairly successful attacks on open source projects by people who pretend to be developers and who commit code that if you look at it superficially, it looks good.
+
+It's putting in a hidden bug of some sort. With a signed commit, you have much greater sort of assurance. That's really Linus Torvalds who made that commit, who approved those changes. It's not somebody who's pretending to be Linus. And so that's turning into a bigger deal than it used to be. I used to think signed commits were a waste of time, but I'm starting to come around to seeing why they might be helpful. Let's see, what else?
+
+I think I there's other stuff but you know these things are specialized if you take a look at people that are just doing backups they'll look at this and say wow this is like we don't need to do this just for backups do we and the answer will be yes but you do need this for version control all right so we have a little bit of time to talk about get itself it's not the only version control system system out there. But it's by far the most popular one. And if there's just two things that I want you to remember about GET, we'll talk a lot more and all that I'm saying, but there's two things that I want you to remember, right? Number one.
+
+is that Git in some sense is an object database.
+
+It steals a lot of ideas from database systems, right?
+
+And once you go and take the database course, you'll come back and look at the notes from this. Well, you won't look at the notes from this lecture. You'll remember them.
+
+They'll be burned into your brain. And you'll remember, oh yeah, with Git we're just doing an object database, It's a database full of objects, sort of in the same sense as object-oriented programming, except these objects are sitting in a file. They're not sitting in RAM like they are in C++ or Python or that sort of thing. These objects are in secondary storage. Because it's an object database, it persists. You lose power, the database is still there. Right? And what this database contains is the history of your project.
+
+And this is what most people think Git does.
+
+And they're right in the sense that it's a very important thing.
+
+But it's only half of what Git does.
+
+The other thing that git has that is not part of the object database, it's something else, is it's called the index or cache. This doesn't contain a history of what your project has done in the past. This contains your plans for the future.
+
+So we have both history and future as being a part of your Git repository. And the reason we have those two different things in different places, because it's possible to think of a design where you put both of this stuff in the same spot, right? The reason we have two different places is quite simple. This part, part number one, is the part you're willing to share with other people. So this is shared with other, or it can be shared with other developers. And when you share it with them, they'll see the exact same history you do, down to the byte for byte level. It's totally the same. This part is your stuff.
+
+This is private. It can't be, well, I guess it could be shared. You could take a look at the index, get all the bytes in it, email it off to somebody. But it's not practical to share it with other people. It's not intended to be shared with other people. It's just your own plans, right? As a result, the index, since it's just your stuff, and then you don't have to publish it anywhere. In some sense, it can be fast because it's local. It's just on your laptop. You don't need to use the network to get at it, right? So it's local and fast. This part, well, it's going to be local, but because it's shared, you have to sort of coordinate and all that sort of thing. So let's just say more coordination is required.
+
+And it can be tricky to do that. And things can go wrong when you try to coordinate your object database with other people. But the cache, that's yours, right? You can play with it and do whatever you like. Many of the commands that you use with GET in order to make changes to your project are going to involve making changes to the object database. And one way to think about it is that unless You get the stuff into the object database, it doesn't count. Nobody else is going to see it. It's like a secret that you will take to your grave if you don't do anything about it. And that's sort of one attitude and under that attitude your goal will be don't put anything important here. Shove it off to the object database as fast as you can.
+
+One that often can be more productive. In which you spend a goodly amount of time getting the index just right. You want your plans to be good. Then once you've got the plans the way you like, then move all the stuff that you like from the index into the object database. The advantage of the second way of doing things is you then have a cleaner object database.
+
+database because you fixed all the stupid mistakes in the index before they got committed. And that way, your fellow developers will thank you because they'll see a simpler history, a cleaner history, and also in large projects where the other developers are reviewing your stuff before it goes in, they'll be more likely to take the changes that you propose because they can understand them better. So to some extent, I think it's fair to say beginning, Git users tend to focus on this stuff and think of this as just a means to the end and they're not wrong, but try to think about the means as well as the end. You need to have both. All right. So let's see if we can get started here. We have, gosh, a whole five minutes. We can do something that, well, let's see if we can get a history here.
+
+So if we do a git clone of HTTPS, I have a URL here, git Savannah new org software. So what I'm doing here is I'm making a clone of a repository from a git server that's somewhere They're in Boston, I think. And what did I do wrong? Well, let's see what it did.
+
+That's the right URL. All right. So what's happening here is that we're going on the network, we're getting, we're setting up a TCP connection between my laptop and a server in Boston, and we are copying a repository from that server onto my laptop. All right. So what does Git clone do?
+
+Well, it really creates three things. First, the object database. So now on my laptop I have a complete history of the development of GNU diff all the way back to 1985 or whatever it was. That's now sitting on my laptop because I've copied the object database. The next thing it does is it creates A trivial index.
+
+I don't, I haven't told Git about any of my plans for the future yet.
+
+So it's created an index but there's nothing interesting in it.
+
+It's just maybe some cache data of what's in there.
+
+The third thing that it creates are working files.
+
+The working files are the files that the rest of your software development systems C's, right? These are the ordinary source files. They're not in the object database. You can do whatever you like with them, right? They don't affect the history and all that sort of thing. And once you have those working files, you can use them the way you would use sort of any set of working files. If we're running, building diff utils, for example, we could run the shell script configured which is part of no bootstrap I should say that's a shell script that's under oh yes CD into diff utils we'll get there and bootstrap is a shell script we can see the source code here and it is a bunch of stuff right and we'll run it because we trust the poor schmuck who wrote it and all that sort essentially what's going on here is the bootstrap script is anti-data grooming. Remember I talked about data grooming earlier? Don't put, don't back up stuff that you can easily recreate. Well the bootstrap script is going to create a bunch of files that can easily be recreated and modify perhaps some of the working files and all that sort of thing and set up this repository the way that I liked it.
+
+But the reason that worked is that one of the working files here is Bootstrap. And if you look in the object database here, you'll see a history of the Bootstrap. So far we haven't really looked at the history, we've just looked at the working files because we want to use this software without thinking about the history.
+
+Oh, this is going to take a while. I should say one more thing. If you've already created a repository, you can do this. You can say, "Git clone diffutils ddddd." Now what's going on here is I'm going to take the already existing object database, trivial index, and working files in one repository on my local laptop and clone, make another copy of the entire thing on my laptop. And the nice thing about that is it's really fast. Local clones run very fast, partly because they don't have to do the network access and fetch stuff from MIT or whatever, but partly because they use hard links instead of copies. Local clones de-duplicate in order to go fast. And we'll talk more about that in a later lecture.
+
