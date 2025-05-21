@@ -1,0 +1,494 @@
+All right, we were talking about version control and get. Let's try that without so much echo. And last time we talked about merging. And I sort of talked about rebasing a bit.
+
+an example of sort of how you might want to do that or how powerful that might be. So let's visit the time zone database which is what I happen to have on my screen anyway. And if I run the command git log that tells the history of this database all the way back to the beginning. Right? And for the purpose of this rebase sort of example let's assume that the history
+
+is really long, right? It has hundreds, probably thousands of commits. But let's suppose that upstream, this is the main version, right? So this is the upstream head, okay? And let's suppose this is our own head, right? And what's happened is we have,
+
+several commits that we've made that we haven't yet published upstream. Right? And the idea being that we plan to publish them eventually, but they may not be exactly the way we like. Okay? This is a place where rebasing a lot of times makes sense because the idea is that these are sort of preliminary commits.
+
+Since they haven't been published, we don't need to worry about other people depending on them, which means we're free to change them if we want to before we publish. And one way we might want to change them is as follows. If we have sort of deltas in a particular order, each delta here is the change that we're making, we might decide simply to help people
+
+view the changes better that they're in the wrong order. And that can often happen when you're developing because you come up with some idea and then you notice, oh, in order to make this work, I really have to have this change in order to make this other -- but logically, this one really should come here. Right? So what I'd rather publish looks like this. This is sort of the perfect thing for a
+
+because we want to publish this and not this. So what we could do here, for example, is let's assume that we've got, oh, I don't know, everything back to, say, here. I'm going back about five commits and all that sort of thing. And I'm going to say, okay, let's
+
+So let me pretend this commit is our, you know, the upstream main version, right? And we've made our own changes, but we want to come up with a different set of changes. What I can run is the following command. Well, first I have to get a shell so you can see what I'm doing. Get rebase minus i and that commit. All right, let me write down that command over here.
+
+Minus I means you want to do what's called an interactive rebase. And the commit that you pick is this one here, right? And in effect, what we're now doing is we're editing history, which I said you couldn't do and you can't do, but we're getting away with it because we're not editing history.
+
+the actual history of our current head. That's always going to be there. We're coming up with a new version of history that works just as well as the original. In fact, it works better. That's why we're doing the rebase. All right. So what we can do here is run this command. Oh, all right. What changes do I have? I don't care. Diff, old diff, all right. Get, check out my,
+
+Minus F and we'll try it again. Actually, before we do this, let's see what branch we're on here. We're currently on the main branch. We'll do -- we'll turn it into branch Z150. Why not? Get checkout minus B Z150. All right? So what I've done is I've called this Z150.
+
+And now I'll do my interactive rebase again.
+
+All right.
+
+And what it does here is it pops up a new editor.
+
+And in that top part of the screen that I'm editing, it gives me all the commits that I'm talking about.
+
+I said I picked half a dozen.
+
+Apparently, I picked more like a dozen.
+
+So there's a dozen commits that by default, if I do nothing, we're just going to reapply those commits, right? In the same order that they originally came. But what I can do instead is I can say, "Let's edit history." All right, so what I'm going to do is I'm going to get rid of this commit down here and I'll put it up here. Okay? See what I did? I said, "I want to take this delta here,
+
+and I want to make it early in my set of commits rather than later. And while I'm at it, I can do other things. For example, I can go down to this commit and delete it entirely. That is, in my rebased version, that particular change won't occur because maybe I didn't like it. It's no good. Another thing I can do is I can go to here and say, let's
+
+Well, this one's not a good one. Let's go up to here. Let's edit this commit. The edit command in this get rebase minus i script says, please apply this commit, but give me a chance to edit it before you actually do it. So we are operating at sort of two orders of separation from the original source code here. We're not editing the source code.
+
+We're editing the set of commits that we're going to apply. And in that, we're saying one of those commits, we don't want to apply it unchanged, we want to edit that as we go. So we're editing something that says please edit. Any questions about how that works? There's a bunch of other commands you can do that list down here all the commands you can do, a bunch of other stuff. But for now, I'm giving you some simple things you can do. Once we're happy with this
+
+little edit script. We can then save it and exit the editor. Control X, control S, control X, control C. All right. And what it now does is it applies the commits that I told it to apply when I was editing. With luck, everything works. If we're not lucky,
+
+It doesn't work. Why not? For the same reason, you can get a conflict when you merge. If you take the changes and do them in some other order, maybe the later change that is now earlier requires an earlier change that's now later. And that means you'll get a merge conflict when you try to apply. So at this point, it says, oh, we screwed up with the news in the South America file. We have to figure out how to change these files.
+
+so that our resulting rebased version will look good. We can try something by doing something random here. All right. I'll do this. I'm not sure this is right, by the way. I'm just doing this as a demo. All right. Here, we like this version. All right. And then we could say, okay, we fixed that up.
+
+I thought we had a shell here, there we go, git rebase continue. The continue option of git rebase says, oh, we were in an interactive rebase. It screwed up. It stopped in the middle. It didn't do all of the rebasing that we wanted. All right? Oh, in fact, before we do that, we can say git status. And what git status will do is it will say,
+
+Oh, here's the current state you're in. You're doing a rebase. We're going to commit this new stage, but wait a second. South America, you haven't really fixed that yet. All right, let's go and fix South America. What did we do wrong? Oh, there was another one down here that we needed to fix. All right, we like the second version. Let's try that again. If we now do a git status, it'll say, okay,
+
+in this interactive rebase that you're doing. You fix the problems. Now we can do a continue. When you continue after fixing this, it says, well, maybe you need to change your commit message since you changed the working files. For now, I'll assume the commit message is still good. And then we can continue. And we are now stopped in the middle of the rebase.
+
+with the ability to edit the particular change where we said we'd like to edit this change. And let's say the edit of this change is something very small like we want to change the makefile. We'll put a today here, why not? And we can say git add makefile because we want that change in here and we can say git rebase continue again. We made the small change that we wanted to make to that
+
+We'll get there. Get. Rebase. Continue. Alright? And we have another conflict later. We can keep going. Once we're done, we will then be sitting here with a modified version of the history. The original version is still there. I gave it the name Z150, but we'll be sitting down here on the main version.
+
+I guess this is one that's called main.
+
+All right, so this gives the ability, us the ability to edit our proposed set of changes, make them look very nice. They won't necessarily be the changes in the order that we wrote them, but they will be changes that other people can then review.
+
+Any questions about interactive rebasing?
+
+Okay. Well, let's talk about a couple of other things. I'd like to mention something about remotes. The basic idea here is that Git is a distributed version control system. Traditionally, version control systems just lived on one machine.
+
+You had to be on that machine to do version control. Eventually, what people came up with the idea was a version control server. An example of that that's very common use right now is GitHub. The idea behind GitHub is that the way that you can collaborate with other people is you set up a repository on GitHub.
+
+where you and your collaborators can both upload changes to the repository and download changes from the repository and that way you can sort of keep in sync with each other. However, the fundamental design of Git is not this way. This is just one way to do it, Git, but Git allows other ways. The basic idea of Git is more general than this. It's really a distributed version control system.
+
+And by that I mean you can have lots of different repositories. Repository 1 sitting in Massachusetts. Repository 2 sitting in Los Angeles. Repository 3 in Chicago. And none of them is the central repository. None of them is the primary server. You don't need to run Git in sort of the GitHub model where there's a single
+
+The kind of idea about this approach in some sense is sort of like it's almost anarchic, right? It means nobody's in charge. Where is the Linux repository? It's maintained under get and where is it? Is it the one sitting in Linus Torvalds desktop?
+
+Is that the main Linux repository? Is it the one on Linux.org? Is it the one on GitHub? In some sense, it doesn't matter in this model. In practice, of course, people very much care what Linus has on his own machine because that eventually turns into the main version. But we don't have to think of his copy as being the central copy. None of the copies matter.
+
+sort of more than the others except in your head. And under this model, the way that repositories keep in sync with each other is that each repository knows about its neighbors in the distributed version control system. So for example, we might have them linked together like this. Repo 2 might be sort of known to Repo 1,
+
+and repo 3 might be known to repo 2. These connections are in some sense directed. But we can have, you know, sort of arbitrary graphs. Here's repo 4 and all that sort of thing. And in some cases, a repository can have multiple upstream repositories like this. There's repo 0.
+
+So repo 2 can look at two different repositories and grab stuff from either one, depending on which you think is more important. From an individual repository's point of view, the idea is when you're maintaining a repository, you would like to know which other repositories in this distributed system are upstream from you.
+
+So, those repositories are called your remotes. If you run the command git remote, it will list all the repositories that are upstream for you. Normally, there's just one because most people clone from GitHub. That'll be the remote, but it doesn't have to be that way. By convention, the default repository, if you just do an ordinary clone, you don't do anything else,
+
+is called origin. So the origin repository is your upstream repository. And in the simplest case, that's all you need to worry about. And that's what we have here. You can find out more details by using git remote minus v. And so this tells us about how we connect to our upstream repository. When you connect to a
+
+You can do it in one of two ways. You can grab stuff out of it. That's called fetching. Or you can put stuff into it because you want to copy stuff from your repository to the remote. That's called pushing. And for our origin repository, this is the simplest case here. I've just done a clone. The fetch and the push are from the same spot.
+
+I can't do that here for this particular one. This is the timezone database repository and I don't trust this laptop to change.
+
+So I'm not going to tell it the, let's pick a different one. All right. CD CS 35 L diff utils. I think this one will work, right? Let's try it again. Git remote show origin.
+
+So this gives us a whole bunch of details about the remote and this is kind of the slowest command that I've shown so far today because this actually consults the remote and get some information from the remote server as well as finding out information locally. All right. So I guess we should do some sort of some of that copying.
+
+stuff, right? So when you're dealing with remotes, right, we've talked about the command git remote, which sort of will give you information about remotes. It will also let you create new remotes if you decide you want to change a remote repository from one to another. You can use the git remote command and all that sort of thing. But most of the time, you won't be executing this command. You'll be executing one of two other commands.
+
+GitFetch and GitPull. There's a third command we'll get to eventually, but these two are sort of the top two when dealing with remotes. All right, so what does GitFetch do? When you say GitFetch, basically your repository consults the remote repository and says, has anything happened on
+
+this particular branch that I should know about. And the remote repository will say, "Oh, yeah. Here's what happened." So if we, at this point, run the command git fetch origin, what it's going to do is it's going to fetch everything that is changed in the origin repository in the branch that we're currently in and copy it down into
+
+our current sort of repository. Where does it do that? If you run the command git branch minus r, this lists not the branches that you have in your repository. It lists the branches that your repository has that are its opinion of what's in the remote repository. Oh my goodness, what's going on here?
+
+Branch B is your repositories. Sort of B. And that will look something like this. Here's your B. But then there'll be another branch called Branch Origin slash B.
+
+And what this branch is, your repository's opinion of what B looks like in the origin repository. In general, those two can be different branches that, well, they are different branches, but they can be different
+
+Maybe it looks like this. We'll put one more here. So this would be the situation. If you've made a couple of changes that you haven't told anybody else about, and you've done a git fetch in the meantime, and you found out that your upstream has changed and people have added three commits up there.
+
+different branches, both named B. One is your opinion of what B looks like, and the other one is what upstream thinks B is. Now, by convention, branches by this name ought to be thought of as being read-only by you. You shouldn't go mess with them, because they're your repository's opinion of what the foreign repository looks like.
+
+go change it I mean git will let you change it but that's a bad idea because now you're in some sense falsifying what upstream looks like it's not something you want to do casual all right so what get fetch does if you just say get fetch origin is the default or if you say get fetch origin what it's going to do is it's going to bring your repository's opinion of what's upstream to be consistent with what
+
+What does GitPull do? GitPull is two commands in one. First, it's a GitFetch. And second, it's a GitMerge. Okay? So in this situation, if I were to run a GitPull origin, what it's going to do
+
+So what we do is it's going to first bring this thing up to date and second it's going to say okay let's merge these two. It'll create a new commit that looks like this with B pointing to it that's a merge from what we used to have as B and what origin B says. Since it's a merge commit you can have trouble. You can have clashes. So a git pull can cause
+
+your system to require some work. You may find that, you know, the initial merge commit here is totally bogus. It doesn't build. It has mistakes. You'll have to go fix it and all that sort of thing, but that's up to you. All right? So to some extent, this is relatively painless. It shouldn't cause any trouble. All it does is it updates the origin branch, which you shouldn't be messing with anyway other than by doing a fetch.
+
+whereas git pole is a bigger deal it means you may run into trouble
+
+all right any questions about the distinctions between the two between a fetch and a pole yes
+
+oh yeah people for example people who like sort of the rebase model rather than the merge model
+
+They'll never do a git pull, right? Because they don't like merging. They'll do a fetch and then they'll do a rebase by hand. Right? That's a fairly common thing. I have, I often use a different strategy. Okay? So here's my strategy. You know, typically this will be, say, main. And this will be origin main. Right? And I don't like this because this is a
+
+This is confusing to me. I don't know about you, but having sort of two different things called main gives me the heebie-jeebies, right? I don't like that. So what I will do is the following. I'll make sure that my main is always the same as origin main. I mean, there's two branches in here. One's called main, one's called origin main, but they always point to the same commit.
+
+If I want to do development, I will do development in some other branch. So here's my branch. And if I want to see what's happening in upstream, I can do a get check out of main, get pull, see what's happening, go back and say get check out my branch.
+
+I'll do a rebase of my branch, which will put me here. Make sure everything's good. And once I'm happy with that, finally, I will check out main, right? Rebase this into main, and then do a git push, right? That way I know my main always is the same as the upstream main, and I'm never
+
+confused about which it is. That's just my practice. Not everybody is this cautious. But the advantage of this approach is I'm never -- when I send email to somebody else saying what's in the main branch, I always know I'm talking about the same thing they're seeing. Question? What branch does GitPole? If you run GitPole, all right, yes. I guess I should talk about tracking branches.
+
+Ordinarily, when you create a branch and you start committing to it and all that sort of thing, Git treats that as a new branch that is, you know, under your control and you can do stuff with it, but it has nothing to do with upstream. However, if you do something like this, Git branch
+
+and B and then say origin B. This creates B as a tracking branch. The idea is that you want your B to stay in sync with the upstream B. And in that case, if you're on branch B and you do a get pull, they'll know where to fetch from because you've told it.
+
+and then you want to do a git merge from origin b. If you don't have a tracking branch, then git pole will say, wait a second, I don't know where to pull from, right? You haven't told me and that sort of thing. Unless you give it some extra options. So normally if you want to do git poles and that sort of thing, you probably want to use a tracking branch. Any other comments? Yes?
+
+Oh, yeah. Oh, absolutely. And in fact, there's more than three, right? Because every repository in this distributed system will have, in effect, kind of two copies of every branch that everybody's work on. One, the origin branch, which is from their upstream, and then the other one, you know, the branch that they currently have. And if you have multiple remotes, you'll have multiple, you know, upstream,
+
+How do you specify which remote? Oh, by convention, these tracking, you will call the upstream branch remote name slash branch name, that sort of thing. And there are other conventions in Git branch names involving slashes that I'm not going to go into here. Slash is sort of a separator in branch names just like it is in file names.
+
+Other comments about remotes? All right. So there is kind of a different way to deal with a common problem. And I feel like I should tell you about this because other developers I talk to use it all the time, even though I tend to not use it.
+
+In fact, you saw me not using this technique earlier in this lecture. And this technique is called stashing. Stashing works as follows. You assume that you have a repository, right, that, you know, has multiple branches and that sort of thing. And it could be that you're working here.
+
+in sort of the main development branch here. So you've got this thing checked out and you've made some changes in your working file, but you're working on it. It's not going to build yet or anything like that. So you've got some sort of deltas here. And by working delta,
+
+A simple way of saying it is we've got a bunch of diff files that we can apply to what's in the main branch but we haven't yet come up with a new commit. And for simplicity let's assume that this working delta is it's not cached at all. So I haven't added it or anything like that. It's kind of part of my plan for the future
+
+future, but it's a very vague plan. All right, so that's my current state and all of a sudden my boss walks into my office and says, emergency, emergency. There's a security bug in our released version over here. I want you to go fix that bug right away. Okay? So what could I do at this point? One possibility would be I could do something like the following. I'll create a template
+
+branch, right? And I'll quickly add everything in my working delta into this commit, right? And this temporary branch will then record what I'm currently doing, even though it's not suitable for human consumption at all, right? And then, once I've done that, right? So I basically, I say, get add minus a, get add.
+
+commit or get branch temp and then get commit, right, and all that sort of thing. And then I go say, let's go to our maintenance branch, which is where the bug is, and go fix it. And once I've done with that, I can then go back and say,
+
+and say, "get, check out temp again," and start working in my temp branch. That approach works, and to some extent, that's the approach I prefer to use, but many developers don't like it because there is a rule of thumb in software development that many developers like, which is never commit anything that doesn't work.
+
+always commit working code and there's good reasons for that role that we'll talk about later so if you're in a project that follows that rule every commit works then this approach is a disaster because it forces you to create a commit that doesn't work because your boss interrupted you so if you're in this sort of viewpoint what you can do is use
+
+is what's called a git stash. So we can run this command instead of running all this stuff. Well, this part we need to keep, right? And in effect, what git stash push does is it says, okay, I'll save all the changes to the working files in a new area called a stash. It's kept in your index.
+
+So in some sense it's part of your plan for the future except you haven't made a commit out of it. You've just put part of your plan into the future into a stack of caches. Push basically says take my current working files and push that onto the stack. And at this once you've done that you can say get checkout
+
+You can fix the problem there.
+
+Just like we did over here, do the same thing over here.
+
+And when you're done, you can go back to the main branch.
+
+And then you can say git stash apply.
+
+What apply does is it pops the most recent set of changes out of your stash, applies it to the current working files, and then you're back off and running again. All right. Fairly straightforward. Okay. If you don't want to use the top level of the stack, there are options to get stash apply that will let you apply.
+
+the second thing in the stack and the third thing in the stack. But since I don't like stashing at all, I don't tend to use those extra options. In some sense, it's kind of like doing the following. Instead of doing all this stuff, just say git diff greater than stash.diff or something, right? Do all this. Do the checkup.
+
+and all that sort of thing. And then down here we say get checkout main. And then apply this by saying patch -p1 less than stash.div. This way is very much like stashes except you're not using get to record your stash.div.
+
+you're using regular files that end in.diff or.stash or whatever convention you like to record your stashes. Either approach works. I tend to use this, but other developers think this is more convenient. Any questions about stashing? All right. Let's try another technique.
+
+that I think every Git developer should know. And this has to do with testing and figuring out what caused a bug. So we're spelunking for bugs here. And it's called bisecting. There's a whole set of commands under the umbrella of git bisect that deal with the following
+
+that says in the latest version on the main branch, the code isn't working. So here we are on the main branch and we know this particular commit is bad. It doesn't do a particular problem correctly. In fact, ideally what you have here is a test case. You can just run a test case. It's like a
+
+and it fails but it should succeed because your software is bad.
+
+And suppose you know that over here in version 23.0 this one's okay.
+
+And what you have is a set of say, I don't know, a thousand commits between the bad branch and the okay branch.
+
+Now, one way to debug the problem is you fire up your debugger, you see exactly what's going wrong and all that sort of thing. And, you know, in some cases that's the best way to find the bug. But oftentimes in a big application, it's really painful to run a debugger, right? Especially if, you know, the test case is expensive to do or all that sort of thing. So another approach that's very popular
+
+in tracking down bugs like this is run the test case in all these commits, right, until you find the one that fails. Let's say it's this one. And then you know this particular delta caused the problem, right, because it's the one that fails.
+
+that introduced the bug that caused your test cases to fail. Well, if you've got a thousand commits between version 23.0 and the main commit, the main branch, it might take a while to run the test case up to a thousand times. That's going to be expensive. So instead, you use the standard technique that you learned in CS31 for doing searching.
+
+You're searching through a sorted list. It's sorted because if bad means one and okay means zero, then it's sorted. All the zeros are followed by all the ones. And if you want to search a sorted array of items, you can do a sequential search, but it's going to be faster
+
+to do a binary search. So bisecting here means take the commit that's about 500 commits in and test this guy. And if this one is okay, you say, well, all these guys are okay. We only have to look at these 500 commits now. And then you keep bisecting and bisecting and bisecting until you finally find the first
+
+commit that's actually bad and that should take you log base 2 of n, where n is the number of commits, in the worst case to do. So instead of doing a thousand test case runs, you only need to do 10 runs because 2 to the tenth is greater than a thousand. Alright, so that's a standard thing to do in testing and git has a command that will help you do that called git by set.
+
+And what git bisect does is it lets you tell git which commits are good and which are bad. And then you can use what it remembers about bad and good commits to do this sort of fast searching for where the bug was. And once you've narrowed down the bug to this change, maybe this delta only changed ten lines.
+
+You can then look at those ten lines and say, "Oh, the bug's got to be in here somewhere," and then go fix it. And that's going to be a lot easier than changing your ten million line source code file and you don't know where the bug is. All right? So one way you can do that is the following. You can run git bisect start.
+
+that you're planning to do a bisect and you're going to now be running some git bisect commands in order to figure out what things went wrong. And then you can say git bisect bad. By default, if you just run git bisect bad, that tells git that the current commit is a bad one. And assuming you're sitting here, right? Here's head.
+
+What git bisect bad will do is it will tell git, hey, this commit is a bad one. I'm not going to tell you about any of the other commits. I don't know about them yet, but I know this one's bad. And then you can say git bisect good and list a commit. In our case, v23.0.
+
+I'm assuming that's a tag that points at the good commit and then git will know this commit is a good one. It's okay. And then here's my favorite part. You can say git bisect run. And you can put any sort of shell command here that you like.
+
+By convention, in a lot of the projects that I use, the way to run all the test cases is run the command make check. This says, run all the test cases and if they all work, succeed, and if any one of them fails, fail. But in that box, you can put whatever command you like that's suitable for whatever technology that you're using. And what Git will do,
+
+when it's told to do, I'll get bisect run. It will say, okay, I know this is bad. I know this is good. Let me go about halfway in between them. I'll run, I'll check out there. I'll run a make check. If that succeeds, I'll mark that as bad or good, and then I'll just keep iterating. And when I'm done, I will put myself at the first bad commit on the list. So in the end, we'll end up here.
+
+where we might have found some bad ones here and some okay ones here, but we didn't have to test every single commit in the list. Now, that's very handy. What can go wrong? Yes? You got some, suppose it's not sorted, right?
+
+search only works if the list is actually sorted. Suppose somebody, for example, by mistake put in a commit, say, here, that was just busted. It has a syntax error in the source code. You can't even build the thing. No matter how you try, this commit is going to be a bad commit, right? Even if everything surrounding it is okay because you immediately
+
+fixed it in the next commit, this one's a bad one. Then what's going to happen? The bisect will get confused by this bad commit and start searching in the wrong spot. Right? So you've lost the benefit of get bisect of having a log in search for the bad commit. This is one of the principal reasons that many projects have the role never commit anything that's broken. Or another
+
+Another way of putting it is, don't break the build. If you break the build, everybody else will be mad at you. You'll be mad at yourself. Your boss will be mad at you. Right? Don't do that. Right? Another way of putting it is, in many projects, the rule is, you have to run make check successfully, or whatever your command is, before you can do a commit. Some people even put that into their commit hooks. Right?
+
+You try to do a git commit, it says, "Okay, let me do a make check. Oh, that failed. I'm not going to let you do the commit." I tend to think that's overkill, partly because I have a lot of test cases. It takes too long. But some people can do that, the ones that test lightly. Anyhow, there is a workaround for this particular problem, though, with git bisect, because we have another command called git bisect.
+
+BISECT.SKIP.
+
+And what you can say is, okay, this, say this commit here is sort of questionable.
+
+I want to skip this.
+
+You'll get, say, get BISECT skipped and then the commit ID.
+
+Right?
+
+And what that will tell get BISECT is don't treat this commit as one that you should test.
+
+Even if it's bad, I don't want to know about it. Don't see if it's good, don't see if it's bad, just skip over it. If you have just, you know, one or two of these commits that were put in by mistake, this approach is a pretty good way of getting around it and still having get bisect be efficient. Other questions about bisecting? All right, well, I think we've got to a good point.
+
+So let's take a break and start up again at the hour. All right, let's start up again. So what I've done on the screen, I've done a local clone, right? That is, I already had a copy of Emacs and I cloned that into Emacs CS35L just for this lecture. And we are now in the CS Emacs 35L sort of directory where we can see all sorts of stuff.
+
+So all the working files here were just created by git clone. In fact, you can see that from the time stamp. They are all freshly created. But what I wanted to look at, before doing too much more, is I wanted to look here. All right? So the max developers have some other git stuff that's under git control. They have a git ignore file, which we talked about earlier. They have some other files. But I want to look at.git itself, which is the git
+
+Subdirectory. Normally you don't, you're not supposed to look here. Right? But we're going to look here. And to some extent what's happening now is we're looking at git internals. I'll put internals in quotes because this isn't as internal as it gets. If you really want to know git internals, you got to go read the git
+
+source code which isn't all that hard just do a git clone of the git source code and there's you know just a few million lines in there it's no big deal we're going to try to do a shortcut though by trying to deduce properties of git internals by looking at the way git represents the repository as a bunch of files and directories and it puts all that
+
+that repository into.get/star somewhere. So let's take a tour of.get and see what we find. We're going to see some stuff here that you normally don't see, you know, normally you don't see this talked about in books because some of it is a little bit embarrassing. Some of it is here only for sort of backwards compatibility reasons
+
+with old versions of Git. In other words, they made a mistake in an earlier design and they fixed it now, but they keep the stuff around just in case you're running an older Git that still has the mistake. So some of the stuff we're going to see here is an example of software evolution in progress. We're running a more recent version of Git and it's trying to be compatible with older versions.
+
+So let's take a look here. The first thing in our directory, right, is a subdirectory called branches. And we can take a look in that subdirectory and it's empty. All right, well anyhow, this is a backwards compatibility which what they used to have
+
+as a separate file for each branch that you create. And they put it in this branches subdirectory. The directory is still there in case you're running an old get that wants to actually put a file there, but we don't use it anymore. What they found was that this approach to representing branches was too slow. It made get not run very fast, right, because it relies on a separate file for each branch, then it has
+
+to go look at all the files in some cases that's just too slow. So they now have a faster way of doing branches and this is kept around in case you have an old version of git that wants to do it the slowest way. Alright, let's try the next one. Config. Oh, I've already mentioned config, right? This is a text file that tells you configuration properties for the current repository. Okay? This is not necessarily all the properties
+
+that git config will say. If we run the command git config, it will tell you, you know, let's go up here, git config, right? All right, git config get all, there we are.
+
+All right. What am I doing wrong? We need another git config command. All right. Well, we'll say... Anyhow, the git config list, I guess it is, right?
+
+I'm having keyboard problems.
+
+Alright, so here is all the configuration parameters of this repository.
+
+Notice it's a lot longer than what's in.get/config because what get has done is it's merged the parameters of the current repository
+
+with parameters that are built into this version of git. And also with my home directories.git config file which has a few other things like what my email address is and all that sort of thing. Alright, so that's git config. Let's see what else we have in our git subdirectory. We have a description file. Alright, so we talked about config. We have a description file.
+
+This file is another sort of obsolete-ish thing. Originally, this was intended to be a nice short description of the Git repository that if you visited it on GitHub, it would tell you about the repository. What they found was that in practice, it wasn't enough. And so there's been a more elaborate way of saying what a repository is about.
+
+about by having files called read me or that sort of thing and this approach isn't really used much anymore. All right. Well, so far we seem to be finding things that aren't being used. Here's one that is. All right. So there's a file called head and what this file tells you is which -- where we are in the current repository.
+
+And typically where you'll be is in some particular branch. We are on the master branch in this repository. And so this is a bunch of text that says basically, hey, we're on the master branch. What else have we got? We have a hooks subdirectory. I've already mentioned what hooks are.
+
+When you clone a repository, you get a hook subdirectory with a bunch of hooks that aren't there. None of these files represent active hooks. They all represent sample hooks that you might want to use, but they're not really there. Notice they're all executable, rwx at the left and all that sort of thing. If you look at one of the samples, I don't know, what should we do?
+
+What this is, is it's going to be an executable file that if you rename this to pre-commit, it will be run every time you try to do a commit in your local repository. And if this shell script fails, that is if it exits with non-zero status, your attempt to commit will be rejected.
+
+Now, we can see this in action in the Emacs source directory with the following thing. What it has is a shell script that you're supposed to run first thing after you do a git clone. That shell script is called autogen.sh. And what it does is it runs a whole bunch of commands. But one of the things it does, and it's sort
+
+I have mentioned this towards the end is it changes your get configuration right so here are a bunch of things that are now different in get that they used to be in fact we can now look at get config and see that it's changed and it's more complicated than it used to be it has a bunch of extra settings forget the idea here is that the emacs developers want to make it convenient for
+
+you to maintain EMACS with get. And in order to make it more convenient, they specify a bunch of options to be used when you run commands like get diff in order to make the diff output look nicer. Another thing that that auto gen.sh did is it modified the hooks so that we now instead of just having a bunch of sample files, have
+
+some actual sort of non-sample files, right? So we can have a hook for pre-commit here that does stuff like this, right? It makes sure that if you edit a file that you, you know, don't have spaces at the ends of lines or a bunch of other sort of trivial things, no commit should be doing some of these bad things and they have simple checks in this script.
+
+to make it work.
+
+So that's what hooks are.
+
+And as you can see, there's a whole bunch of -- here's one about commit messages.
+
+This is the longest one because they're very picky about commit messages and make sure
+
+that every commit message is good.
+
+For example, you're not allowed to use an empty commit because what they found is too many developers were rushed and they said, "Oh, I don't want to waste my time writing a commit message.
+
+I'll just put in an empty one. And this is an attempt to tell you don't be rushed. So now you know what some of them do, right? They put in a commit message that just says X. Anyhow, I mean, it's a cat and mouse game to some extent, but at least you can try to help out the cooperative developers, remind them of what they're supposed to do. All right, so that's hooks. The next file is the index file. Okay, let's take a look at it.
+
+whoops that's not the index file that's my keyboard misbehaving here's the index file and as you can see if you try to interpret it as a text file which is the default that Emacs does with something in a it's just a bunch of binary data right in some sense the index file is gets way to stay efficient in the presence of commands like get add and a bunch of other commands where you're sort of changing what you plan for
+
+for the future. It keeps your plans for the future in this file, but it puts them in an efficient binary form that's not intended for use by outside programs. So the Git developers feel no need to sort of make this convenient to use, and we won't investigate it anymore, at least not in this lecture. What else have we got? We have the info directory, and it's got an exclude subdirectory.
+
+Let's see. We did index. We have info exclude. This contains globbing patterns for files you want to exclude. So this is a repository-specific way of doing something like
+
+what gitignore already does except you don't put it into a file under git control you put it directly in the repository. I never use this feature. I far prefer putting it in gitignore where everybody else can see it but I guess some people still like to do it in this more private way. What else do we have? We have the logs file and we can look at
+
+So this is log slash head. This records where your head commit has been so far during your use of this repository. We've just done a git clone. So in this repository, head has only had one value. There it is. Okay? But this is going to record
+
+every change that we make to head. So this is a history not of your working files, it's a history of where your repository has been pointing to, what commit your repository has been addressing and all that sort of thing. So it's almost a history about your use of the history. It's like three levels away from the original working file. But this history can be very helpful.
+
+there are git commands that will query this file and they will tell you where you've been. So, for example, if you're in the busy doing, I don't know, a git bisect, and after you've done, you say, okay, yeah, all right, I'm done, I figured out this bug, now where was I, what branch did I used to be on, that sort of thing, this file can be very helpful. It will tell you what you were working on yesterday, even though you've been moving head around a lot today.
+
+Okay. What else do we have? And refs will also give you histories. Well, let's see. Refs tells you sort of the same thing for master. There's, you know, one of these history things for everything that you've gotten, including where your remotes have been. The next one is objects. All right.
+
+All right, we'll put that over here, all right?
+
+This is the place where the git internals store the objects in your git object repository,
+
+that is, the history of your system.
+
+And if we go and look at this objects directory, we will see maybe a bunch of subdirectories
+
+what the subdirectories will look like is something that looks like this.
+
+Df, is that what it says? Oh, 3f.
+
+3f and then if we look in 3f, we'll see something like c1432 blah blah blah, something 4e.
+
+All right? This funny file name, which is two hexadecimal digits and then a slash and then 38 more hexadecimal digits, corresponds to the SHA1 checksum of an object in the Git repository.
+
+The reason that it's written this way rather than in the obvious way where you just have 40 hex digits in a row was because they used to not have the slash in the very early versions of get. And what they found is as the repositories got full, the object's subdirectory got big and early versions of Linux performed poorly if you had a directory
+
+with thousands of files in it. Right? Because sometimes there'd be thousands of objects sitting here in the object directory. Early versions of Unix used an order n squared algorithm when you were looking in directories. Like, what were they thinking? I don't know. Anyhow. So, in order to make get run fast on Linux, they decided to help out the file system by giving the files these names. Therefore, at the objects
+
+level, there would be most 256 of these subdirectories, because there's only 256 possibilities here. And then each of these subdirectories might have a large number of files, but it would be 1 256th of what they would be otherwise, and that was good enough for the time. In hindsight, maybe they shouldn't have done that, but it's too late to change now. We can look at one of these files. We've got one here.
+
+What do we see? A bunch of binary data again. However, this binary data is actual contents of a git object, except it's compressed. And what we see here is the compressed form. We'll talk a little bit more about the compressed form later and all that sort of thing. But this is really, you know, basically just the contents of a git object. Just compressed.
+
+We'll have to decode it later somehow. All right. What else have we got? We've got the objects. We've got some helpful information about the objects. This is going to be a commit graph in binary form. Let's not look there. What's all this other stuff? We have, all right. I'm going to do a short version here.
+
+There are packed objects as well. And the basic idea of a packed object is that as a Git repository gets large, it will contain more and more and more objects. But the object database in Git is usually pretty simple. Objects check in and they never check out.
+
+getting checked into the system and they never leave and they never change. No object contents can possibly change in Git because its name is a checksum of its contents. That means the Git object database is mostly stagnant. It's mostly unchanging. And therefore, for efficiency, what we can do, instead of maintaining each object specially,
+
+in its own file like this approach. What we can do is we can take a whole bunch of objects and pack them together into a single file, stick them into the database, and if we are clever about packing, we'll come up with a representation that's a lot smaller than if we maintain each object separately. Among other things, what we can do is we can look for common sub-patterns
+
+and in the packed version you only need to have one copy of that sub pattern rather than have n copies because you have n objects with a sub pattern. That's a normal thing that git will do and that's what it does for efficiency. Now in your homework assignment you're going to have to be delving into this part of the object database. For simplicity you're not going to need to worry about this.
+
+It's not all that much harder than this. You just have to learn the packing format. But it's one more level of complication and I think we've sort of got well, we can leave well enough alone and say, you know, we can save that for, how about winter quarter 2026 CS35L. We can have them look at the packed objects. I think that'll work well. All right.
+
+Let's see what else we have. The commit graph, I think that should be fairly straightforward for what that has. We've looked at that. Oh, packed graphs here. Okay. So what we have here is a text file that tells us where all of the branches are in this particular repository. So we have, for example, a reference called origin master badger
+
+the upstream repository has a branch by the name of master bad 19 and here's the commit ID for the tip of that branch that sort of thing and what else have we got refs this has a list for each reference that is each branch and each tag what commit ID that branch and that tag point to right so this is how get keeps
+
+of the mapping between symbolic names for commits and the actual commits.
+
+All right, so what I want to do next is do a bit more about Git objects.
+
+Because in some sense, what Git is at its heart is an object-oriented repository
+
+or an object oriented database that contains the history of your system, right? GIT sort of, how should I say, manages an object oriented database of your project history.
+
+And we don't have the time to go into all the theory about databases in general and object-oriented databases in particular. We have a whole course about that later. Is that required, by the way? Do you guys have to take a database course? There must be any experts in the house on our curriculum? No, it's not required. If it were required, you all would be saying, oh, yeah, the counselor told me. It's actually a good course
+
+to have. Databases are in some sense more important than programs. And to some extent, I'm following that philosophy in this lecture because I'm giving you a lecture on Git internals. But what I'm really focusing on is this object-oriented database that's sitting at the heart of Git, right? So what are some of the elements of that history, of that database?
+
+First off, I want to sort of distinguish between what is called porcelain versus what is called plumbing in Git. These names started off as being sort of jokes, but they're now technical terms in Git. And they have to do with how a plumber views your house. Okay? When you have a problem with your bathroom and there's water gushing up out
+
+out of the bathroom sink or something, right? You look at the porcelain. You see the surface and all that sort of thing. When a plumber comes and looks at your house, the plumber thinks the porcelain is really unimportant. It's just that like thin gold-plated veneer over the real part of your house. And the real part of the house is the part underneath where the pipes are. That's where all the work is actually being done. Git has the same sort of attitude.
+
+So, for example, command like git bling is definitely part of the porcelain. It's intended for use by git users. It's very important to them and all that sort of thing, but it kind of doesn't have anything to do with how git is actually implemented inside. It just makes git look nice. That's the whole point.
+
+whereas git plumbing are the low-level commands that git uses in order to actually get work done. And by get work done, I mean go and change the objects file. Go and change, you know, add something to this object directory. And an example of a plumbing command would be, say, git show. That is a fairly low-level command that looks directly at the object database and tells you about
+
+what is in that object database.
+
+Actually, a better one would be git cat file.
+
+So to some extent, I'm going to start off by doing a little bit of git plumbing so that we can see at a low level how these objects are created.
+
+All right.
+
+Let's not do this to poor little Emacs. Because I don't want to trash it. We're going to create some little test directory. Example. And what I'm going to do first is do a git init. This command is a command I rarely use in the real world. Because what it says is I'm starting an entirely new project. I'm not cloning from an existing work. This is we're
+
+building something from scratch. So after you do a git init, you know, there's no working files created. If you say, let's find, whoops, every sort of regular file in existence, what git init did is it created a bunch of files that don't matter like sample files and all that sort of thing. It created a git head, you know, it gave me a minimal configuration, but it didn't really do anything
+
+else. Notice in particular, there is nothing in.git/objects because our git object repository is empty. All right. So now what we'd like to do is put something into our repository. So let's try something like this. This is how I test how well educated you are in North Campus stuff.
+
+How many people here know Latin? Nobody. Do you realize that if I'd asked this question 100 years ago at UCLA, pretty much everybody would have raised their hand because they all had to study the thing in high school? In fact, I'm old enough that I studied Latin in high school, right? Anyhow, so here's some Latin. It's from one of the most famous Latin poems ever written.
+
+and it's an immortal poem people will know about it a thousand years from now. Okay? And what I'm doing is I'm running into one of the git plumbing commands which is git hash object. This is a very simple command. You feed it a byte string and it tells you the SHA1 checksum of that byte string. That's an important
+
+is an essential feature of how git is implemented. And if you give it the stand-in option, it will read that byte string from standard input. So in some sense, this is a very simple command. It's like any of a number of other checksum commands that are available in Linux, except this one computes the SHA1 checksum that git is based on. This use of git hash object does not change the repository.
+
+All it does is it tells you what that hash value is going to be. So if we want to actually make a change, we can do the same thing and give the minus w option. Minus w says, you know, this byte string that you've read and you're going to tell me the hash value of it. Also, create an object in the git repository
+
+that has that contents. So when we've done this, it will still output the same checkson because it's the same string. Oh, by the way, this, anybody recognize this poem? All right. It's the first part of the first line of the Aeneid, written by Virgil. He wanted to burn it.
+
+just before he died, but they rescued it from the flames. And it's the story of the Trojan War. So this is really a poem about USC. I hope you don't mind the foreign aspects of this example. All right. So what we've done now, if we do that same find that we did before, notice there is now an object in our objects database. Find found it the first thing. And that object file contains the string that we gave it.
+
+We can look at that file by just taking this name and seeing what its contents are. And as you can see, the contents are a bunch of binary data. But trust me, the string that I typed into there, there's a little bit of Latin encoded into that binary data. All right? And we can find out about
+
+what's in an object with the get cat file command. So if we have this commit ID, well not a commit ID, this ID, we can run get cat file minus T of that and it will tell us that this object is a blob, right? This says, this is an ID of an object in the get data
+
+the simplest kind of object in the git database is a blob it's called a blob because git doesn't care what's in it other than that it's a byte string the meaning of a blob is totally up to you git doesn't care it's just a bunch of bytes and if you want to know what those bytes are you run that same command
+
+except you use -p which is short I guess for print. And that will tell us the byte string that's in that particular blob. And this byte string is arma vremka kano period new line. Okay, so that's how we can put blobs into the database. Now you can do this with files as well, right?
+
+like this.
+
+In fact
+
+And I sing of arms and the man and what? Troy is the best city in the world? I don't know what it's saying. It's the usual BS from USC. All right. And so we can now say get hash object object minus w Aeneid.text. I misspelled Aeneid. Oh my goodness. Let's fix that.
+
+The Romans loved vowels. Alright, git hash. Oh, alright. We'll get there.
+
+All right, so now what we've done is we've taken the contents of this file and created another object in our objects database and we can do a git cat file minus p and a minus t for that. What we haven't done is created a commit. All we've done is created a couple of blobs in the database, right? If I do right now git log, for example, it'll say there's nothing here.
+
+All right, so if we want to sort of make progress here, we have to put something else into our object database that will help us sort of recover the directory and file hierarchy of our project, right? And the next sort of stage that I'd like to do is talk about -- we've already talked about
+
+I want to talk about the next type which is the tree. So the git repository tree type roughly corresponds to a directory in your source code. A blob roughly corresponds to a file and a tree corresponds to a directory. So in other words, trees can contain
+
+entries, right? And each entry in the tree, you can think of that as being a list of entries, each of them containing the following. A name, and this will be a name like the name in a POSIX directory, right? It's just a bunch of characters, and you can pretty much put into a name
+
+name, whatever you like. It'll contain a type. This type will be the type of the named object. So common type values here will be blob, because you have a blob sitting in a directory. Or tree, because you can have a tree sitting in a directory. And then you have a mode. This mode is an octal number.
+
+And it at least superficially looks like the permissions of a file that's sitting in an ordinary sort of Linux directory. So some possible modes are the following. 100644. This is for a file, sort of a regular file. 100755, which stands for an
+
+an executable file.
+
+1, 2, 0, 0, 0, 0, 0, symbolic link.
+
+And there's others.
+
+But basically the idea here is this tells you the permissions and maybe a little bit about
+
+the POSIX file type of that particular entry.
+
+And then we have an SHA1 checksum. This checksum is the checksum of the named object. And the get system can look up that other object because it can map from checksums to their contents. All right? So if we, let's say go back to Emacs, I think we can say something like this.
+
+cat file - T of master tree like this. And what I've done here is I've said give me the tree that corresponds to the latest commit in the master branch and let's see what that the type of that object is. Well of course it's going to be tree. A more interesting command.
+
+will be to do this. This says, give me the contents of that tree. And what we see here are the contents of our tree, right? And we have in that contents the four sort of things that I talked about here, not in the order that I gave you because it lists the mode first, then the type, then the checksum of the object that we're pointing at, and then last, the name.
+
+of that particular entry. So in some sense, what I've just done here is the equivalent of LS minus L for the git tree. And you can see that some things are very much the same. This corresponds to LS minus L, what it outputs as the file name. This corresponds to if you were to run LS minus LI, the inode number of the file that you're pointing to, except git doesn't
+
+doesn't use inode numbers, it uses SHA1 check cells. This corresponds to the first column of output in LS minus L, which tells you the file type, and this corresponds to the permissions sort of entry in LS minus L. So there's a lot of things in common here. And if we want to, we can find, you know, some subtree here. Notice that most of these entries are blobs because most of
+
+You can see files at the top level of emacs are regular files, but some of them are trees. Like this one here. Here's the tree for build-ox. And we can pick that particular sort of ID and see what that tree looks like. Right? By just grabbing it. And say, get cat files.
+
+minus P and that guy, right? So we are now sort of -- it's like CD-ing into a subdirectory and listing the contents of that subdirectory. All right. So if we wanted to, we can use commands like, I don't know, git update index.
+
+and get right tree to sort of build a tree object. Update index updates your index that is your plan for the future. You're telling get I want to make a tree. And then the get right tree command says take that tree that I've put into the index and actually
+
+create an object in the database that corresponds to that tree. Let's see if we can do that. And we go back to our previous directory. We can say get update index and cache info 100644.
+
+So I'm saying please create an entry in the tree that its name is Aneid.text and its commit ID is this thing here. Alright and then we can say get write tree.
+
+that file minus p like that. So what we've done here is we've created a very simple tree with just one leaf in the tree in our object database and that tree has these contents. It basically says I'm a directory and I've got a file named a need.text in it and if you want to know the contents go look there. All right. Now if we run git log
+
+we still see nothing. In order to actually see something that a developer might like, we need yet another sort of object in our git repository. This object is called a commit. And this is what most git users see. If we want to see what a commit looks like in, say, our Emacs repository,
+
+we can do something like this. Right? Get log will tell us information about the commit, but I don't want to know the information about the commit. I want to know actually what the commit is. So I can do something like this. Cat file minus T of that commit ID, right? And it says, oh, it's a commit. No news there. I can say get cat file minus P of that commit ID, and it looks like this.
+
+What do we have here? The head commit in this Emacs repository has the following contents. And by convention, a commit's contents is a bunch of name value pairs for attributes of the commit. And then an empty line saying, okay, that's the end of the attributes. And then everything after that is the commit message. By convention, a commit message has
+
+something really short, shouldn't be longer than 50 characters, another empty line in the contents, but you can put into the commit message anything you like. So although from some, you know, one point of view about a commit is the most important thing in the commit is the message, there's other stuff obviously. First thing listed is the tree. The tree is the directory that corresponds to that commit.
+
+you what all the source code is and all the directory hierarchy and all that sort of thing because that's what trees do. They tell you about what the working file should look like. The second line here tells me the author. I'm sorry, not the author, the parent. The parent of a commit is the next older commit in the history. You can have multiple parents in the case of a merged commit. Most commits, they'll just have a single parent.
+
+The third line is the author. That's the person who wrote the commit. Okay? And it has the name and the email address and that last number there that starts with 174 is a time stamp. It counts the number of seconds since January 1st, 1970, Universal Time. And that's when that commit was written. The fourth line is the committer.
+
+The person who actually ran git commit and installed this into the object repository. In this case, the committer is the same person as the author, but that doesn't have to be in the case. To some extent, when you're doing the equivalent of git blame, oftentimes you want to blame both people. Right? Not just the guy who wrote the mistake, but the guy who mistakenly installed it into the repository. Anyhow,
+
+It also has a timestamp. Notice that the author time stamp and the committer time stamp are not necessarily the same because the time you wrote the patch isn't necessarily the same as the time you actually committed it. Any questions about what is in a commit object? Yes. Oh, the time zone. This guy is an hour ahead of GMT.
+
+Okay, so any questions about what a commit is? Notice commits are pretty small, right? You could have made a whole bunch of changes in your commit, but the commit object itself, all it has is your commit message, a little bit of overhead done. Because the things that the user cares about, about the contents of the commit, the changes that were made, that's really sitting in the tree object.
+
+And the tree object itself is something that's pretty complicated. It'll have a bunch of subtrees. It'll be talking about a bunch of blobs, all that sort of thing. So, you know, although the commit object itself is really small, it usually represents a fairly large thing because you can start following all those commit IDs or all those object IDs to see what it really represents.
+
+commit with something that looks like this. Commit tree. And then, oh, let's go back to our standard thing, cd dot dot slash, right? And get commit tree. And if we go back,
+
+to that commit ID tree. Where did the tree go? All right, here's our tree. So we pick that and then, you know, I'm now running another sort of plumbing command. Git commit tree basically says,
+
+ID and then on standard input you're supposed to write a commit message. So here's our commit message at the lectures end and the control D and now we have a get commit, right? So we can use our low level plumbing commands to build up
+
+a Git repository that looks any way that we like. If you're writing programs that extend Git, you're writing a bunch of shell scripts or Python scripts that are front ends to the Git commands, you'll probably be using low level commands like this to get your work done. Most people don't need to do this, right? And if, I don't know, I guess if you're lucky you'll never need to do this, but if you're unlucky like me you're going to have to go and munch the Git repository.
+

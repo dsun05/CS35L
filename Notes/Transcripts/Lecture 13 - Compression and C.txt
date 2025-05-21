@@ -1,0 +1,534 @@
+All right, so we have a little bit more to talk about get, and then I want to start talking about, what, I guess next week's assignment. So when we last left get, we were talking about you have a directory.
+
+Underneath that you have a git subdirectory. Underneath that you have the git objects. And then underneath that you have these funny object files. Here we're talking about unpacked objects which is the original and simplest and all that sort of thing form of the way git represents objects. We're not talking about packed objects or anything fancy like that. But I want you to sort of see how this stuff works. And as you recall, we have something that looks
+
+looks like this, where this is 38 hexadecimal digits, this is 2 hexadecimal digits.
+
+If you concatenate those two values, you get a 40 hexadecimal digits, which is the SHA checksum
+
+of the object.
+
+But what I didn't entirely get to was what the contents of this file are, because the contents
+
+of the file basically are that object, okay, and except it's compressed. As we saw last time, there's multiple kinds of gets objects. We talked about blobs and trees and commits. Today I'm just going to focus on the simplest one, the blob.
+
+It's a string of bytes. And that string of bytes starts off BLOB. And then there's a space and a count. All right. 196. And then there is a null byte. I'll write it this way. It's not really a backslash zero. It's a single null byte character.
+
+you're going to see 196 bytes here, which are the contents of the blob. And as Git doesn't, in some sense, care what the contents of the blob are, at least not at this level. There will be higher levels at which Git cares. When it's trying to figure out good ways to represent blobs in a more compact way, it might do something else other than just
+
+represent this string, but at this level that's how it's going to work. It's about as simple as it gets. In some sense, you might think this could even be simplified further, right? Like, why do we have both this number sitting here at the start of the blob, and then that's redundant with the length of the blob? You could just take the length of the blob, subtract 5, you know how many bytes there are, right?
+
+that we're trying to find a representation that will work even when it's thrown together with a whole bunch of representations. Like maybe in a packed file or something like that, right? So we don't want the blob format itself to assume that somebody else is keeping track of the length of the blob because in some cases there won't be anybody else. It'll have to be the blob itself that says how big it is. So that's why there's 196 here.
+
+There's another question you might ask. Why is this count expressed as a decimal series of characters and not as a binary number, which would be more efficient, right? Any thoughts on why that might be? Yes. You go read blobs by hand? Well, essentially, no, that's the right answer.
+
+Right? Except this isn't for the ordinary human. This is for the human that goes and debugs Git code. Right? And the idea being that, okay, yeah, you could do that. You could fit all this into a single byte, right? Bites go from 0 to 255. So yeah, you could shrink this by a couple of bytes. But it's just not worth the aggravation. Because we have better ways to save space than this kind of micromanaging.
+
+of byte counts and we will see some of those better ways in a few minutes. Any questions on blob formats internally before we see more details? Yes? Oh, that's a null byte, right? So these are ASCII characters, right? So this is actually a byte with a value of 97, but don't quote me on that, right? And, you know, and I'll actually think, and this is a byte value
+
+with value zero. In ASCII, it's spelled this way, N-U-L, as a single character. And if you're writing C code, it's the thing at the end of a character string. All right, other questions about the blob? All right, well, the other thing that's different, and I mentioned this last time, but I wanted to go into a little bit more detail this time, is that if you look in this file, you don't see a string that looks like this.
+
+you see this string compressed. And it's compressed via ZLib, which is a standard compression library that uses basically the same compression algorithm that GZIP uses and a bunch of other programs. And I thought it was important to mention this because, first off, when you're writing code,
+
+to deal with this. You're going to have to decompress it. And second, every software developer should know at least a little bit about compression because you're going to spend a good chunk of your professional career worrying about it. Okay? So first thing, is this compressed file always smaller than this file, the original blob?
+
+And I should hope you can see by a very simple argument that there's no such thing as a general compression algorithm. One that always compresses a file into something smaller and then you can decompress it later.
+
+such a thing cannot exist. Why not? Wait a second, they call it a compression algorithm and I'm telling you it's not a compression algorithm, right? So why is compression, general purpose compression impossible? Yes? Yeah, you keep compressing over and over again. Each time the file gets smaller.
+
+Eventually the file gets down to one byte. You can compress it again. You get it down to zero bytes, right? Obviously that can't work, right? There's a simple information theoretic argument that explains why compression cannot possibly work, right? Which is if the original input has, say, two to the 1,024 possibilities, right? Because it has 1,024 bits in it.
+
+then your output representation also has to have 2 to the 1024 possibilities and there's no way to represent that many possibilities without having 1024 bits. Right? So compression cannot work in general and yet Git uses it all the time and lots of other systems use it all the time. How does it work if it can't work in general? Any thoughts?
+
+Yes? So it looks for patterns and if the input doesn't have any patterns. It what? You're cooked. But wait a second. Wait a second. Wait a second. Well, this leads into another issue, right? Which is, does Git work on arbitrary binary data?
+
+the blob at all, any sequence of bytes. And I've told you a couple times you can, and in fact, Git will support an arbitrary sequence of bytes. But there's a catch. And the catch has something to do with compression algorithms. What a typical compression algorithm will do is if you give it text that's compressible, like it contains common English phrases,
+
+like, you know, try harder or get more sleep or that sort of thing. It comes up with really short strings because those common phrases are somehow easily representable. Whereas if you give the compression algorithm completely random bits, it's going to go, I don't know how to compress this. And it will generate output that's a little bit longer than the input.
+
+plus a little header saying, "I couldn't compress this, boss." Right? Just use all the rest of these bits as is. Right? So what a compression algorithm will do, if it works well for you, is usually it'll give you output that's considerably smaller than the input. Might be half the size. If you're lucky, it's a tenth of the size. Right? But if your input's totally random, it'll give up and give you output that's slightly larger than the input.
+
+If you look at the total number of possible inputs of size n, the output sizes then will sometimes be less than n, sometimes be greater than n. On average, they got to be n because that's the best you can do. So when we look at the compression algorithms that git uses, which is the same compression algorithms that gzip uses, I want you to think about that and think about which kinds of files, source files,
+
+are going to be compressed pretty well by this approach and which files are going to be ahhh and basically Zlib or Gzip will give up and generate output that's somewhat longer than the input. Alright, so the algorithm that Gzip uses uses two sort of big ideas for compression.
+
+One dating to the 1950s, it's almost as old as I am, and one dating to the 1970s. And those two basic ideas are Huffman coding and dictionary compression.
+
+because it's older and simpler and it has this wonderful property that you can prove that it's the optimal compression algorithm under a certain set of assumptions. It's a beautiful algorithm. Everybody should know about Huffman coding even if you never use it directly yourself. So the basic idea of Huffman coding is the following. We want to assume that the input is a series of symbols.
+
+sequence of symbols with known probabilities.
+
+So, for example, if we assume that the input is a sequence of bytes,
+
+There are 256 symbols in our alphabet, right? In a given alphabet, I should say. And if we assume that it's English, what's the most common letter in English text, the most common character? Good guess, but wrong. Space is right, okay?
+
+The space is the most common character because it's the one and people love to use spaces, right? Because they have to use them to separate words, right? E might be number two, lowercase e, and then you go through T-A-O-N-R-I-S-H. I didn't make up this list. I remembered it. And there's a bunch of others, right? New lines in there somewhere.
+
+Let's assume we know the probabilities that each of these characters will appear in sort of the text that we're trying to compress. So space, the probability might be 0.2 because that's such a popular character. People love spaces. E, the probability might be 0.1. That's actually a bit high for E.
+
+Make it 0.06. And so forth and so on. You'll get a whole bunch of weights. And the sum of all these weights, if we go to the end of the alphabet, is going to be 1. Right? If you look at the bytes with the top bits on, what are the probability of those bytes in English text?
+
+how ASCII works and the top bit on and all that sort of thing. What does top bit on mean? Oh my. Go back and study the midterm again. Right? But the point is that we can come up with a probability for each symbol. And for simplicity, let's assume that, you know, we know all those probabilities. What we want now is, all right, that's the input. We want the output.
+
+to be a sequence of bits, not bytes, bits, that represents the input. And we want this sequence to be minimal. Minimal in the sense, fewest number of bits. All right? So that's one thing that we want.
+
+Another thing that we want is after we've compressed it and we have this bit string, we want to be able to decompress it afterwards, right? So what we need is to sort of go from this input to this output is we need a table. And what this table will do is it will say for each symbol in our input
+
+what bit string to generate. So this table will map from symbols to bit strings. So the idea is that somewhere in this table there'll be an e, that's a symbol, and then over here will be a bit string. If you want to say e, say 01,
+
+like that.
+
+There's something else we need from this table though.
+
+Oh, well, let's do some longer ones.
+
+All right.
+
+So, say once we get down to, I don't know, q, q is going to be unlikely.
+
+All right.
+
+So q, we're going to give a longer bit string.
+
+In fact, for unlikely symbols, this bit string could have more than eight bits in it. Even though our input language only has 256 possibilities, which means you could easily sort of generate bit strings each of length eight, we are going to use a better approach in which we use a variable length encoding, the common letters,
+
+get short bit strings and the less common letters get long bit strings and that way we know we generate a shorter sequence of bits than we would if we did it the dumb way. So space might get something like this, a zero zero. We decide to give space and e sort of leading zeros. Everybody else starts with the leading one. Some of those guys that start with leading one get long bit strings but since
+
+and E's are so common, our resulting compressed bit string is going to be shorter than 8 bits per character. See the basic idea? In order for this idea to work though, this table has to be unambiguous.
+
+in the sense that if you're reading a bit string because you're trying to decompress, it has to be obvious as to which character the initial prefix of that bit string maps to. So you can't ever have a situation that looks like this. Let's say we decide R looks like this. That's not allowed because then if the input looks like zero, oh, that's not allowed.
+
+a bit. If the input looks like 0, 1, 0, 1, 0, we won't know whether to generate an E or an R. This isn't allowed. R has to start with a 1. One something or another, we're not quite sure what. But every prefix here has to disagree with every other longer character. Otherwise, you wouldn't know whether to generate an E or that longer character if the input bit string looks like this.
+
+All right, so far so good. How do we arrange for this table to exist and be unambiguous and be minimal? And this is where Professor Huffman had a great idea. Actually, when he came up with the idea, it wasn't a professor, but it was such a good idea they made a professor out of him afterwards. Here's the idea. You start off
+
+with each character sitting by itself. So here's space with a 0.2. Here's E with a 0.06. Down to here's a rare letter with, you know, 0. or capital Q. Oh, that's going to be really rare. 0.0003 or something, right? You'll have 256 entries here sort of floating around in space.
+
+Your goal is to build a tree out of all of these things, treating the existing elements as leaves. At the root of the tree will be a node that's the initial node in your prefixes. And the idea that you want is if you see a zero, you'll go down to here. And if you then see a zero, you'll go down to here. And if you see a one, you'll go down to here
+
+will have 256 leaves, right? And each sort of leaf will be part of a parent node that it has exactly two children, right? So that tells you how many nodes will be in the total tree, right? There's 256 leaves. Each time you merge something in the tree, you get rid of one node and you add a node.
+
+So you're going to have 255 internal nodes. And 256 leaves. And the way you build the tree is you take the two rarest nodes that are floating around in your system and you combine them. Let's suppose, for example, that capital Q and capital Z are your rarest ones.
+
+like this. What you do is you combine them in a single node, which we can label, I don't know, we'll call this node QZ if you like, and you give to this new node the weight that's the sum of the weight of its children. You add this number to this number, you get.00031, and then you repeat the process. From now on, you ignore these leaves,
+
+You just have a single sort of bigger node and you start combining it at each step of the process you combine the two remaining nodes that have the smallest weight. What's going to happen? The rare nodes are going to start combining like crazy. These are all nodes that are not very popular. The heavyweight nodes these guys are just going to sit around saying they'll twiddle their thumbs.
+
+Eventually, the rare nodes will gang up into be sort of a biggish node here that finally is in the same ballpark as these guys and then you can say, "Oh, well that will be the ones." So here's the one ones, and here's the one zeros and all that sort of thing. But this tree is going to sort of lean to the right, at least the way that I've drawn it, because the lightweight nodes combine first.
+
+Once you have that tree, you now know the encoding for any particular character. You just take the path from the root down to the character, one, one, one, zero. Okay, that's my encoding for this guy. It's actually going to be longer than just four bits. It's going to be like 12 bits, but it's the same basic idea. All right, any questions on how Huffman coding works? Yes.
+
+A special number?
+
+You said that you keep combining the two rarest.
+
+Right.
+
+So at what point do you stop doing that and branch out?
+
+Alright, so at every point you combine two into one, which means the number of active nodes,
+
+the number of nodes you still are worried about, shrinks by one.
+
+which means that since you started off with 256 in this particular way, you'll do 255 combinations. That's why there's 255 internal nodes. You keep combining until there's one node left with weight one, and then you're done, right? Because all of these numbers add up to one. All right. So the basic idea here now is in order to compress... Oh, question.
+
+Yeah, once you get to this node, the probability that you're in this subtree is this weight. Oh yeah, this is a set. And actually in the Huffman algorithm, they don't even label the node. They just say, you just have a node.
+
+So now the idea is if you want to compress data, you want to send data from point A to point B, and you know it's English data, it's English text, and so you know the probabilities, right? You have all these numbers, right? Then you share your Huffman tree with your recipient, and then you say, okay, now you know how I'm
+
+going to be sending symbols, right? We're sending at this bit string. And under all those assumptions, what Huffman proved was that the number of bits that you send is minimized. You can't compress any better than this if this is your assumption, right? You share the tree. The input is a bunch of symbols. The output is a bunch of bits. And for each symbol
+
+has a unique bit encoding. This is an optimal algorithm. Now, what's the catch? There's a couple of catches here. One having to do with my little hand wavy bit about sharing the table. And the other having to do with my assumption that we are compressing one symbol at a time. Let's look at the first catch first.
+
+So the idea here is that if you want to compress English text, right, you have sort of English and you know, you have sort of what you hope is going to be a compressed version. But there's in your head, there's sort of this table. The table is the one that you generated from the probabilities and the table is known
+
+to both the sender, that is the compressor, and the receiver. Huffman originally developed this for compressing communications, right, just sending short messages instead of longer ones. And so he used the term sender and receiver. We could use compressor and decompressor. It's the same thing. But that means suppose we're not sending English. Suppose we're sending Portuguese.
+
+We could use the English table on our Portuguese data, but it won't compress as well as it would if we used a table that was tuned for Portuguese. So it sounds like a better method might be the following. This approach works only if we assume everybody writes JavaScript code in English or something like that, and then we all just have a single JavaScript table and we always use
+
+that doesn't work. So instead, here's an alternate approach. The sender or the compressor reads the input data, comes up with a table, and then ships a copy of the table to the recipient. The recipient now has the table, and now the sender can start sending bits. So one approach, in fact the simplest approach,
+
+is the sender constructs the table. And in order to construct the table, it has to read the whole input, right? And then what's being sent over the wire or stuck into the file or wherever you're putting this compressed stuff is going to be a header information.
+
+And this header contains a copy of the table. And then the contents here are the compressed data. That way you have a general purpose compression algorithm that will work on English, it will work on Portuguese, it will work on shell scripts, whatever data you got, it will come up with the
+
+optimal compression sort of table for that data and it'll use that to sort of send from point A to point B. There's of course some overhead involved because now we have to send the table along with the data that hurts our compression. And in fact if the data are really small, it's like five bytes long, this is actually going to not be a very good compression algorithm. But at least
+
+for big stuff, it's gonna be better than just trying to use the English table for everything. All right. Now, what I'd like to argue is that we can do better than this simpler approach. In fact, almost nobody uses a simple approach anymore. They all use this better approach. This better approach is called
+
+adaptive Huffman encoding.
+
+It's more complicated than the simple approach. That's a downside. But it performs better for most applications than the simple approach does. And one way in which it performs better is it means you don't need
+
+two passes over the input if you're the sender. You just need one pass. And in your one pass, you do two things at once. First, you compress the data as you're going. Second, you keep track of what the table looks like right now. But you don't output the table. You just output the compressed data.
+
+Now, how in the world can that work? Here's the basic idea. The sender and the recipient both start with the trivial Huffman tree in their heads.
+
+What's the trivial tree? Well, the trivial tree is one that's completely balanced, right? If your input data, every byte is equally probable, then the Huffman tree that you build will be very nicely balanced, you know, and the null byte will be sitting over here with a path 0000 to it, right? The byte with all bit ones will be sitting way over here with a pattern.
+
+with the path 1111111 to get to it. Every leaf is at the same distance from the root and there's no compression. Right? Because every symbol is compressed to itself. Right? So you start off with the trivial tree in your head. All right? And then the sender sends one byte. Or the sender sort of compresses, I should say, one input symbol.
+
+When it does so, it will send that symbol to the recipient in the clear. It will be exactly the same bit pattern that we have. And then the recipient will now know what the first input symbol is. And the sender and the recipient now do a tricky thing. They now update.
+
+That is, they both keep the Huffman tree in their head. It starts off being trivial. After they copy one symbol across, then all of a sudden the weights have changed. We got a whole bunch of symbols with weight zero. We have one symbol with weight one. We get a Huffman tree optimized for that. And then you repeat.
+
+the sender and the recipient keep sort of exchanging symbols. As they go, they keep updating in their head what the optimal Huffman tree is for the symbols already seen. And as time goes on, that table gets pretty good because it matches the probability distribution of the first thousand bytes or ten thousand bytes or whatever it is of the data, and that's probably going to match the rest of the data. See how that works?
+
+When they're done, they have a nice Huffman tree that would have, if they'd known ahead of time what it would be, would have given them the optimal compressed data. Under this approach, the compressed data is no longer optimal because the sender doesn't know what the optimal table will be until the very last symbol. So it's going to be a little bit longer than the original. And one way to think about this adaptive Huffman encoding is that you have
+
+the compressed data, except it's a little longer than it was before, because you have these little insertions, and what these little insertions are, are tiny little additions to your Huffman tree. So in some sense, instead of setting the Huffman tree at the start of your whole process, you send it as you go. When you're done, the length of this is probably about the length of
+
+This is the same amount of information. But the advantage of this approach is that the sender doesn't need to make two passes over the file. Can just make one pass. And the sender and receiver have a small amount of memory that they need to keep track of as they're doing compression. How much memory? Well, it's enough to represent a Huffman tree, which isn't very much. Alright, any questions on adaptive
+
+Yes? How does this update thing here work? So in RAM, the sender sort of keeps a Huffman tree which can be kept as a tree data structure in memory inside the sender. When it sees a new character, it knows, oh, the value of this leaf used to be, you know, weight.0005, now it's.006.
+
+that sort of thing. And what it can do is it can shuffle around the contents of the tree in order to make sure that the resulting tree is now still a valid Huffman tree. As long as the sender and recipient agree on that algorithm, then the recipient can do the same thing. Because the recipient will see the previous characters that the sender sent. It knows what the current tree looks like. Very clever idea if you ask me. All right.
+
+Question? The main benefit is that it only requires one pass over the data. For the sender, right? For the sender. Yeah, the recipient doesn't win much this way, right? Because the recipient, it needs to keep track of the tree and RAM either way. And it just makes one pass over the data. It's the sender that wins. I don't know why we can't still send. Why does the recipient have to be worked before it's like received?
+
+Well, because the recipient wants to be getting bits from the compressed file or the communication link and it wants to be, you know, generating output because people want to know, hey, what's the data look like? And it can do that as it goes because at each point it knows what the next symbol is so it can output the next symbol right away. Yeah, it could save it up if it wanted to and make two passes, but why bother? Just make one pass.
+
+Yes, the sender and recipient have to exactly agree on how they're going to update the tree. Because it's possible to have two different trees that are both optimal. In fact, if you just take a tree and flip it around so all the ones become zeros and vice versa, they're both.
+
+optimal and you obviously you want the center and recipient agree about which direction is zero and which is one all the time so that there has to be that agreement but that's what gzip does and you know everybody else does that too all right any other comments yes they well that's going beyond the scope of this lecture but you can do this update and order log in time
+
+So it's not so bad. And since, you know, N is 256, that's really order one. Other comments? Yes. Oh, yeah. So for example, suppose you're compressing some source file that starts off in English, but then has a whole bunch of Portuguese error messages in it.
+
+The Huffman tree will start off being favorable to English. Then all of a sudden, there's this Portuguese stuff. It'll change perhaps somewhat dramatically. And then for the rest of the input, it'll assume, hey, this must be some combination of English and Portuguese. So yeah, the table, particularly at the start, will often change dramatically. Question? Louder, please.
+
+Yeah, they both have to maintain the tree in their head, in RAM.
+
+What effect does that mean?
+
+That it does require the extra memory. That's absolutely true. But as long as we're doing bytes, it's a byte-oriented approach, which is what gzip does, the amount of memory is, you know, 200 or 512 nodes in RAM. It's no big deal with today's computers.
+
+In fact, one of the common themes about compression is that you can get better compression quality in general. That is, the output can be much and much smaller, but oftentimes that's going to cost you RAM, either on the side of the compressor, you know, the sender, or on the side of the receiver, decompressor, or both. So there's a RAM sort of compression tradeoff going on here. This approach takes very little RAM.
+
+Almost every other approach, in fact, we'll talk about one other approach. It's going to take more RAM than this. Other comments? All right, so I argued that Huffman coding is provably optimal. David Huffman proved it decades ago. So, okay, if it's optimal, that means we can't do any better than it. How come there's this other approach, dictionary compression, which gzip
+
+also uses.
+
+And the reason that we have the two approaches is that dictionary compression doesn't make the assumption that Huffman coding does. With Huffman coding, the assumption is every time you get an input byte, you output a sequence of bits. Input byte, sequence of bits. Input byte, sequence of bits. Dictionary compression says we can do better than that as long as we don't assume that basic algorithm.
+
+So dictionary compression works the following. Instead of trying to come up with a table that looks like this, we come up with a table that looks like this. V is the most popular word in the English language. It's really popular, right? And that, well, it's actually more popular than that. What am I saying? Something like that.
+
+and so forth and so on.
+
+The idea of dictionary compression is to compress using a dictionary.
+
+And well, actually for now, let's not even count the popularity.
+
+Let's just assume we do the following.
+
+We'll say this is word number one, word number two, word number three, word number four,
+
+and all that sort of thing.
+
+And as long as our dictionary is small enough, let's say,
+
+at most two to the 16th entries, shall we say? Right? Only 65,536 entries. That means you can represent this index in a 16-bit number, which means you can send any word you like in two bytes worth of data, 16 bits. Now, for a word like A, you've lost, right?
+
+But most English words are at least two characters long. In fact, they're mostly a lot longer than that. And so you're going to get a reasonable amount of compression using this approach. In fact, you'll get better compression with dictionary compression than you will with Huffman coding in many cases. The reason you've beat Huffman coding, which is provably optimal, is because you've thought outside the box.
+
+you're not following the Huffman coding rules. The Huffman coding rules say each time you get a symbol, each time you get a character, you got to output a bit string. Here? No, no, no, no. We can see sort of a long word, right? Understandable. We're reading byte after byte after byte. We're not outputting anything. We're waiting for the word to end. Once the word ends, then we output two bytes that say, oh, that's word number four. All right?
+
+So the idea here is that, okay, we could take the entire, how many words are there in English, by the way? You guys are engineers. You should always have numbers when people ask you dumb questions. 5,000? Over 5,000, how many? 5,000 is totally too small. 5,000 is like super basic English.
+
+If I lectured to you in a 5,000 word subset of English, I'd be fired. Right? Because they would say Dr. Eggert is speaking like for fifth graders. Any estimates? 100,000 is a better estimate. I would guess it's, that's for common English. You could probably get by in 100,000. For, you know, lectures at computer, lectures of computer science and other subjects at UCLA, I would say you need at least
+
+300,000. What do I know? It's some large number, right? But, you know, for, if you can get yourself down to 65,000, that's not a bad approach, right? Question? Oh, well, or equivalently, what if you start doing Portuguese, right? Because the Portuguese is not going to be in the dictionary at all, right? So, a better approach is going to be the following.
+
+What we'll do is we will scan the input file looking for words. We'll come up with a table of words. That table will assign to each word an integer. We'll ship our word table from the sender to the recipient. And then once the recipient knows the word table, we can just start sending out indexes into the table. Right?
+
+kind of the same basic idea as this simple approach with Huffman code.
+
+We send here a dictionary and the dictionary maps small integers to words.
+
+Okay? And then here we just send indexes.
+
+If the dictionary has, say, 300,000 entries,
+
+then these indexes are going to need to be 300,000. What's log base 2 of 300,000 quick? Two to the 19th. Very good. You'd need 19 bits, right? So these are 19-bit indexes and you just send them and you're off to the races. Okay? So can you see a problem with this approach? Is there a catch?
+
+I can see a couple of catches. I can see three catches. Come on. Let's hear them. First off, I've just been talking about the words. What about everything else? Like the spaces and the commas and the exclamation points and all that stuff that aren't words. In dictionary compression, the basic idea is everything is part of a word. So, if you
+
+you see as a common sequence in the input, T-H-E followed by a space, which is really common in real English text, that's a word. So by word, I don't really mean word in the sense of English. I mean a common sequence of bytes in the input. And what that sequence of bytes is, it's totally up to me and it can contain periods or any symbols that are in the input.
+
+that you like. You can even have no bytes in there, I suppose. Question? How does this fit into which? Oh, well, maybe you'll need 2 to the 18th or 2 to the 19th for English, but yeah, you can get away with it, right? Yes? So if the word in the middle perception is at the end of the sentence, how does the perception work? Oh, well, you know, you say the greater
+
+the number or something like that. Right? This will be two different occurrences of the word "the" space. And if that's word number one, you'll turn this into a one. You'll turn this into a one. And then down here, you know, there'll be a greater of the space and that's word number twelve. And you'll turn this into a twelve, right? Something like that. So yeah, every time you use the word, you have to sort of, you know, send out
+
+and indexing, please use this word in the compressed version. Yes? If I just use your absolute gibberish, wouldn't there be an infinite number of possible words? Oh, yeah. So if the input is totally random bits, then your dictionary is not going to be all that useful, right? In some sense, if the input's totally random, probably what you should have is just one word, and its length is the length of the input, and that doesn't compress very well at all.
+
+But the similar problem with Huffman coding, right? If the input is totally random, Huffman coding isn't going to buy you anything. This only works if there are common repetition. You're using dictionary encoding because you know that English, Portuguese, JavaScript, all of those guys, you see a lot of redundancy in the input. You're taking advantage of that. All right. Question.
+
+another dictionary compression on. Oh, well, yes, you could do that. That is, you could keep applying this idea over and over again. What you'll probably find is that it doesn't work for the same reason that the idea that you can keep running gzip over and over again on the same input, it's going to help. No, it doesn't. In fact, after the first run, it's probably not going to help.
+
+All right, question.
+
+How does it determine where our words are?
+
+Yeah, that's kind of the problem here, right?
+
+How do we know where the word boundaries ought to be in an algorithm?
+
+Like, I'm assuming the algorithm doesn't know English.
+
+So how does it know to break the word boundary at the space or that sort of thing?
+
+There's a lot to be sort of worried about here or mysterious about here.
+
+So what I want you to do is think about that.
+
+how do we sort of figure out what word boundaries are even though we don't want the notion of word to be hardwired into the system? That's one problem. And the second problem here is this approach requires two passes over the input by the compressor. The sender has to go through first, come up with a dictionary, and second, finally, okay, ship out the dictionary and start shipping out indexes. So we have two problems. You know, what do we mean by word?
+
+how do we find word boundaries when we don't care what language it is? And second, how do we have an approach that doesn't require us reading all the input once? Read all the input, sorry, and then read it again. So why don't you think about that while we take a break and we'll start up again at the hour.
+
+All right, let's start up again.
+
+So I left us with the problem of doing adaptive dictionary compression.
+
+Well, I didn't actually mention that phrase is the problem, but that's really the problem I gave you.
+
+And this phrase should give you a hint as to how to attack the problem. The sender does not read the entire input, figure out a good dictionary, ship the dictionary to the recipient, and then start sending data because that means you got to read the data twice as the sender. Instead, the sender and recipient both start off with an empty dictionary in their heads.
+
+and they start exchanging bytes one at a time, right? And as they go, they will build up a dictionary in their heads, the dictionary basically consisting of all the text seen so far. Now, there's a catch to that approach. And the catch is that if the input is really long, it's terabytes of data, you can have a dictionary with terabytes of words in it.
+
+And that means the sender and recipient have to have a lot of RAM, which is not going to fly in the Internet of Things and that sort of thing where you have, you know, toasters that want to be able to decompress. So instead, we want to have a dictionary compression that works with a small amount of input, say, an input of, let's say, 64 kibby bytes, right? So we want to have a dictionary with only 64 kibby bytes of data in it.
+
+You can pick whatever number you like, but I'll pick 64k. And there's actually a nice dictionary to use if you're thinking about it that way. So suppose here's the entire input. And suppose we've already sent a good chunk of the input so that our input cursor is here.
+
+So this part is already sent. We can assume that the recipient can figure out what was in it because it knows the dictionary compression algorithm. What we're going to do is the following. We're going to take the most recent 64 kibbytes of data, which we've already sent, and we're going to call that the dictionary. That is our dictionary.
+
+In that data you're going to see a lot of nice English words like the, an understandable, assuming we use understandable a lot, and so forth and so on. So there's a lot of good stuff in there to be our dictionary. The way we identify a word in the dictionary is we simply specify the index in that 64k window of where the word starts and we specify how long the word is in bytes.
+
+the word "understandable". Here it is, "understandable". We send this number, right, and this length. The number is going to be a 16-bit quantity. That'll get us anywhere in that 64k window. The length will be, let's say, an 8-bit quantity because words are at most 256 words long. If they're any longer, we'll just send two words.
+
+That means we now need three bytes to set a word index. We don't have to have a fancy data structure in the recipient to represent the dictionary. The dictionary is just the most recent 64k it has. This means the sender can maintain in its head what the dictionary is. It's just this sliding window. It's called a sliding window because after
+
+After the sender identifies the next word in the input, which let's say it's understood, it will send out this little token that says, I want the word at offset, you know, here's the offset, here's the length. Right? So it sends out that three byte quantity. Then the sender and the recipient both advance the dictionary, the sliding window,
+
+by the length of the word that they just exchanged and then they repeat the process. At each point in time they both know what the most recent 64k is and that limits the size of the dictionary so that we don't exhaust RAM on the sender and the recipient. See how that works? Any questions? I hope from your understanding of how it works you get an intuition
+
+of what will compress well and what won't. Yes? When you slide the window, some of the dictionary gets thrown away, right? Because you no longer remember what that is. Absolutely. Yeah, if there's some word in here, let's say syzygy, you all have seen that word, right?
+
+And now it's not in the dictionary anymore. We need some mechanism to sort of put an arbitrary sequence of bytes in here just in case. For example, maybe there's no S in here anywhere. Now we've got to put an S here. How are we going to do that? There has to be an escape mechanism to say I can put in any byte that we want. One way to do that is to have an imaginary 256 bytes extra part of the window that always contains the byte.
+
+from 0 through 255 and then use that. So there are ways that you can sort of have an escape
+
+patch to let you put anything, output anything, and therefore put anything into the dictionary. In fact, that's how you have to start off. When you start off, there's nothing in the history. You have to be able to ship out the first few bytes. And whatever that escape mechanism is, you can use that to put in any bytes. Yes?
+
+Oh, it won't. Right, right? That is, this offset here is the offset from the start of the dictionary. As the dictionary slides, the next time you use understandable, you're going to put a different number here because understandable is now at a different spot. Right? Each time you send out a token, it will be talking about the dictionary the way it is now, not the way it was
+
+you know in the previous words. So these numbers will be constantly changing even if you know you're saying the same word over and over again. Yes? How do I do what? Because the recipient also knows what's in the window at every step. And so the recipient knows oh this offset meant understandable here. Now this different number still means understandable because now I've updated my dictionary to match the senders.
+
+Question? Could you reference what the three bytes in the back of the... So my assumption here was a 64k sliding window. So the dictionary, you can specify the offset or the index of any byte in the dictionary with a 16-bit quantity. So this offset here is the offset from the start of the dictionary. Or maybe from the end, doesn't matter.
+
+And this one-byte quantity here is the length, the number of bytes in the word. Right? So once you have those two numbers, you know how much of the dictionary to sort of copy into the next input value, and then you know how much to slide. Question? Are we determining the length of the next word? Oh, how does the recipient know what length
+
+What the sender does is it looks in the existing dictionary, looks in the input, finds the longest input string that also appears in the dictionary and uses that. Right? Yes? What if there's a word that's repeated a lot of times? Then it doesn't matter which offset you use, any offset will do.
+
+The closest one to the cursor, that might be a good choice.
+
+But would you still be wasting space?
+
+Oh yes.
+
+Yes, yes you would be wasting space.
+
+And you can, you're probably are now thinking of some improvements in the algorithm which you could definitely make.
+
+Other comments?
+
+Yes.
+
+Yes? You mentioned that to get the longest word, it'll like, to get the length of an encoding for the word, it's like, for the longest word to tweak at your cursor and then in the dictionary. I find that like really computationally. Oh, yes. So let's have a little homework assignment for Monday. Come up with an algorithm for doing that in order n log n time rather than the obvious order n squared.
+
+It's doable.
+
+Now let's not make it do by Monday.
+
+I was just kidding about a new homework assignment.
+
+But yes, you can come up with something.
+
+That is, you'll want to have an internal representation if you're the sender
+
+that's smarter than just having the dictionary being an array of bytes.
+
+You want to have a tree representation of that array of bytes
+
+that will let you easily find the longest match
+
+when you sort of read the next set of bytes from the input. And that's doable. It's not that hard. Okay, other comments. Yes? What if the recipient doesn't store the whole byte stream? No, like it stores the entire byte stream, but it doesn't compare, like right now it decompress later.
+
+The contents before the dictionary?
+
+Oh, well, if I understand you correctly, what you're saying is something like this. Suppose the recipient doesn't have all of the original input now. It just has the input from here on, right? Or another way of putting it is, suppose the recipient is missing some bytes of the input. Can it generate the rest of the output? And the answer is no. That's a very simple thing. With adaptive Huffman coding or with adaptive decoding,
+
+if the recipient loses a single bite of data, you're toast from there on out. It's just totally bogus from there on out. You won't know what, I mean, you can try, you can sort of guess, but in general, you can't recover the data. So both of these approaches place a high premium on the reliability of the data. And pretty much every compression scheme will do that, will place greater sort of importance on the fact that you can
+
+You can't lose bids. Other comments on this approach? All right. Well, these are not the only compression algorithms out there, but I hope you can now look at this and come up with data that Zlib and GZIP will do very good job of compressing. It's easy to find data that they'll do a bad job at. Just give them
+
+They won't be able to compress it. But with this, you should be able to generate stuff that will compress really, really well and impress all your friends. All right. So I have a completely different topic to turn our attention to, which is relevant for the assignments that we'll be doing next week and the week after. And the week after-- no, no, just two weeks, right?
+
+I'll warn you before we get started that there's a draft version of the assignment out there on the web which you may have seen already but it's just draft it's not official yet and it won't be official until at least this weekend we're still working on it so please don't try to start it and finish it between now and Friday because in the end you'll probably have to do some more work just with that warning okay so what is this
+
+Last homework assignment about. It's about a number of things, and I'll talk about a few of the things this lecture, but we'll have much more to talk about next week. We'll start by talking about C programming. And I have to mention this because officially you guys don't know C. You've been infected with the C++ virus.
+
+and you know C++ and how it goes. It's a really low-level language and all that sort of thing. And you're wondering, why did I have to waste my time learning this thing when I could have learned Python? And what I'm about to tell you is C++ is too high level. It's too far away from the machine. It forces you to do all of this stuff with classes and all that sort of thing, which just gets in the way of really efficient code.
+
+So what we'll talk about today is how to get away from all of that stuff. CS33 kind of does something similar, right? How many of you guys have taken 33? Oh, half, right? So for some of you, this will be old hat, and for some of it, you will be new hat, but even for the people that have seen it before, you'll be looking at the hat at a 90 degree angle or something like that. So please pay attention to it. Oh, that sort of thing.
+
+So, to some extent, you can think of the following. C equals C++ minus a bunch of stuff. All right? So what do we give up? First off, we give up classes and objects. Except it should be said that we're only giving up C++ objects.
+
+There are still C objects at the C level. It's just that they're simpler than they were in the C++ level. The part that you give up include the following. Polymorphism, that is, you have a single sort of interface that can be implemented in lots of different ways. You can't do that in C. That's for WIMPs. You give up encapsulation.
+
+at least some forms of it.
+
+Encapsulation means you protect part of your program from other parts of the program.
+
+You have a little keep out sign around this part of your program.
+
+Other parts of your program aren't supposed to look at it.
+
+A lot of that goes away in C.
+
+In C, even more than in C++, the assumption is that your program is one big happy family
+
+and nobody minds if this part of the program goes into the bathroom while the other one's already in the bathroom, right? It's just fine. There's no privacy. All right? And another thing you give up is inheritance. They teach you about that in CS31, inheritance? What is it good for? Exactly. That's the whole point of C. It's not good for anything. It's just
+
+stuff they tell you that it's good but in practice it's like complete overkill for a lot of applications you don't need inheritance right another thing that we gave up in C is the idea of abstract data objects that means that the user of an object doesn't know how the
+
+the object is implemented and doesn't care. You can still do this in C, but not as nearly as easily as you can do it in C++. A lot of that abstraction goes away. All right, that's the biggest thing you give up. Second thing that you give up is that you can have static data members and functions in structs.
+
+So you can have a struct with a static data member, which means there's only one instance of that data member for your whole program rather than having a member for each instance of this struct. See, he says, what is that? If you want something static, just go declare it somewhere else. You don't need that feature. All right. Next thing is native.
+
+Namespace control. They teach you about namespaces in CS31? A little bit, right? Well, forget it all. You don't need that. Namespaces, yeah, you can get some of that in C, but you have to do it by hand, and it's really a pain. Overloading.
+
+two different methods with the same name and they're disambiguated by knowing what class they're being invoked on behalf of or that sort of thing. C doesn't have overloading. If you want to have two different functions, give them two different names. Keep it simple. All right. Exception handling. With try-catch, that sort of thing. There is exception handling in C, but it's such
+
+that I will say please don't use it in this class. You don't want to use it. It's tricky, right? It's also tricky in C++, but in C they sort of make it explicitly tricky. You really don't want to deal with it. All right. Built-in, and I'll put that in quotes, memory allocation. With language
+
+operators like new and delete. There is no new in C. There is no delete in C. If you want to allocate something, call a function like your grandparents did. So there is a standard function to do it, but it's not a built-in operation. The standard function is called mAlloc, which is sort for please allocate some memory for me and here's how many bytes I need.
+
+The type is totally up to you as the C programmer. And there is a free function that basically says, "Oh, I've got an object that I allocated with mAlloc. I don't need it anymore." Next thing is C in and C out. Those guys. The things that you use to do printing and that sort of thing don't exist in C
+
+in C. Instead, they have their own low-level functions, and when you think you've found the lowest level, there's a lower level than that. But the replacement in C is in a standard header called standardio.h, and the functions in there are quite simple and primitive. All right. There's other stuff you give up, but this is probably the stuff that you'll notice. Any questions?
+
+Yes? You give up classes and objects, but what? Well, you don't have classes. There are no such thing as classes. And objects, an object in C is basically a piece of memory and you know its type. That's it, right? So it's not the idea in C++ whereas an object is something you allocate with new and that sort of thing. In C, an object is just
+
+You still have struct. You don't have class, but you have struct. Absolutely. All right. Any other questions about what we gave up? This is sort of like the email I got yesterday from the chancellor. Did you get, did that, did only professors get it? Well, it said, you have to give up traveling. No, not traveling. Sorry. Eating. Eating.
+
+So the university will no longer pay for food at university functions because we're running low on money. Right? So here we're giving up eating in C++ just the way that I have to stop eating for lunch at UCLA. All right. So if you're trying to build a C application.
+
+You need a development environment. There's lots of ways to do it, but there is the most popular approach, which is the approach taken in Linux and all that sort of thing. So maybe we'll put popular. If you've taken CS33, you know how this stuff works. I'm going to say it again, I hope in a different way.
+
+So the idea here is you start off with foo.c and then you want to convert it into something that's closer to machine code. And the way you do it is to convert it into another file foo.i. They told you about that in CS33, right? I got to talk to the people who teach CS33. And the command that you use to do that is called gcc minus e.
+
+This says run the preprocessor, but don't do anything else.
+
+So if the input looks like this, define intmax to be 217474834848.
+
+I've forgotten what it is, but this is really 2 to the 31st minus 1.
+
+And then here we say int main return int max, which is a really stupid thing to do, but I'm going to do it anyway. This is in your foo.c file. In your foo.i file, you will see something that looks like this. int main return 2174838.
+
+That is, it's the result of preprocessing. You execute all the preprocessing directives, you expand all the macros that you see. When you're done, you still have C code, except it doesn't have any preprocessing directives in it anymore. Actually, if you take a look at this stuff, there will be a bunch of things starting with sharp sign, but you can treat them as comments. They give you the line numbers of where this stuff came from originally. That's the first step.
+
+It's not much of a step really. I mean this is just C code that's harder to read to some extent. But it is an important step to understand if you're trying to debug this stuff because oftentimes the bug in your program is in the preprocessor macros, not in the rest of your code. And you need to use gcc minus e in order to see that. The command would be something that looks like this. gcc minus e foo dot c.
+
+greater than foo dot i. That's our first step. Second step is to take this preprocessed code and to turn it into assembly language, foo dot s. You can use the command gcc minus capital s foo dot i to do that. The assembly language will be
+
+a textual representation of the machine instructions you plan to run on the target machine. So it might look something that looks like this. Main colon move long 2174838484 whatever the number is. EAX return. And for those of you that know CS33,
+
+you can you know exactly what's going on here. We're doing some register stuff. And for those that haven't taken CS33, well this is like a nice little introduction to the class. Alright? The next step is to take this assembly language and to turn it into an object file, foo.out. You can do that by running gcc minus c foo.s.
+
+The object file is no longer text. It's binary. It's intended to be something that's pretty close to the machine code that you'll actually run. So sitting in that binary file is going to be this constant somewhere, right, which will look like, I don't know, 7... Sitting in a 4 byte quantity, right? But we'll also have to sort of have these instructions somewhere.
+
+I don't happen to know offhand how the move long into EAX is encoded. Any x86-64 experts in the house? No? Then I will make up something. E8-4-C. And you can't prove me wrong. All right? And then the return instruction is, actually I think it's a one-byte instruction. I've forgotten what it is, but it's a 4-8, that sort of thing. But that's not enough.
+
+to be a.o file. That's just the binary machine instructions that will be executed. In the.o file, we also have to say other things. In particular, we have to say there's a main function. And the main function is going to start right here. So there's an auxiliary table of locations and names. Also, it's the common case that this machine
+
+The machine code is only partially known. There will be gaps in it. For example, if our original function here wasn't simply a return statement, but it was something like return, I don't know, say absolute value of int max, then we'd have to issue a call instruction here.
+
+here, call r, no, no, no, no, e, s, i. There we go. Call abs return. Something like that, right? And then we don't know where the address of this subroutine is. So in here, we're going to have a little gap. We'll say, I don t know what this is. And our table here will
+
+will also contain a table of sort of gaps to fill in. So it'll say I know where main is, I don't know where abs is, that is the.o file is not machine code that you can execute yet. If we want to go from foo.o to something that we can execute, we have to run yet another program, the loader.
+
+and we would say gcc foo dot o minus o foo, something like that. That's the command that will get us there. What happens here is this executable is generated not simply from your object file, but from the C library, which contains a whole bunch of functions in here. One of those functions will be the abs function. We'll get something in here that knows how to call the
+
+the abs function in the C library. Cool, we finally have a running program, right? Wrong. All we have is an executable. If you want to actually run it, you will have to type the command./foo to run the loader. That's the program that reads your file into RAM and sets the instruction pointer to point at its main function. That's part of the kernel.
+
+a separate program, but we finally have a running program.
+
+It's a lot of work. Wouldn't it be better if we had something really, you know, much simpler than this? There are alternatives that are simpler and less sort of painful and all that sort of thing, but an advantage of doing it this way is it's modular.
+
+If you don't like the linker, you can run your own. That's what Google does. They don't use the linker that you have on CSNet. They have their own linker. It runs rings around this one for some things. If you don't like the preprocessor, just run your own. You don't need to use GCCs. You can have your own that has some extra features. So a nice property of all this approach is it's nice and modular. For introductory students, though, it seems like it's going to be a little bit overkill.
+
+Sorry about that. All right. So that's one way to look at it. There's another way to look at it, which is once your program is running, it's running in what's called a process in the operating system.
+
+And you can see what processes you have with some auxiliary programs. Auxiliary programs. Used for process control. Computer science professors don't like to talk about these programs because they're kind of hacky and undignified and all that sort of thing.
+
+So I'll tell you about a few of them. You're going to need them if you're going to be doing anything practical at the low level. A very simple one is the PS command. The PS command is short for process status and it will tell you about all the processes that you have. In fact, it will tell you about all the processes anybody's running. There's lots of options here. Some of my favorite combinations are EF, which says give me a full listing of everything.
+
+process on the system including all the students. Another one is PS minus EJH which says not only give me a full listing, show me the process hierarchy, which processes started off each other processes and all that sort of thing. Once you've found a process, each one of these running programs has a number. Say that's the process ID of this number. Another very handy
+
+The next program to have is the kill program. Kill basically by default tries to kill off process number 91732 which you can find out the process number by running ps. Notice I used the word try. That's because the way it operates is by sending a signal and by default the signal is a somewhat
+
+signal and the signal is basically saying a process can you stop running right I think I think you've gone long enough you know don't don't run anymore please processes if they're polite which most of them are will immediately say oh yes boss and will immediately exit but it's possible that you will try to kill off a process and find out that it doesn't work for those recalcitrant processes kill has an option
+
+Or if you like spelling it out, you can say minus K-I-L-L. Kill minus kill or minus 9. Says kill off the process. Don't give it a chance to say no. Just make sure it terminates. There are other signals. These are signal numbers. And really what kill does is it sends a signal.
+
+For example, the command kill minus int sends an interrupt signal which is the same signal you send when you type control C. The characters that you use to control a terminal, a program from a terminal are also available as signals to kill. And this can be very handy for, you know, trying to figure out what's gone wrong with all the processes you've send up.
+
+Here's another one. There is the stop signal. This stops the process, but you can continue it later. The process is just frozen. It hasn't exited. It doesn't even know that it's stopped yet because you have stopped it without any opportunity to do anything about it. And once you've figured out what was wrong, you can continue it with the continue signal.
+
+These kinds of commands, PS and kill, are used by ops staff. People who are trying to make sure that the system is performing well and has not gone off the rails. When you run programs on your own laptop, you're your own ops staff, so you should know about this stuff. Even when you run stuff on CSNAP, you're the ops staff for your own stuff, so you should at least know about these programs.
+
+is the program top. Top is like running PS minus EF all over and over again, once a second, and each time give me the top 20 processes, the biggest hogs on the system. When I log into a CSNAP machine and it's really sluggish, I run top, I find out which student is chewing up all that CPU time, and then I send email to the ops staff and they go and
+
+I don't have the ability to kill off your processes directly. Any questions about these commands so far? Yes way in back. Well they want the default to be polite rather than mean. Minus nine is mean right you're not giving the program a chance to clean
+
+for example, the sort command. If you're sorting a terabyte of data, it can't sort by reading it into RAM and sorting it and all that sort of thing because we don't have a terabyte of RAM on CSNET. So instead what it does is it takes some of your stuff, sticks it into a temporary file, sorts that, creates a bunch of temp files and in the end it merges the result. When you just kill sort, it goes and removes all those
+
+those temp files because it doesn't want to leave them around in the file system. If you use kill minus sign on sort, it leaves the temp files around and they're just polluting the system later. Other comments? Yes? All right, so process ID number one is the init process. It's the very first process that starts up when the system boots. It's responsible for starting up every other process, either directly or indirectly.
+
+If you kill off process one, I guess the system's going to reboot. So don't do that. Luckily, the rule on CSNet and Linux in general is that you can only kill your own processes. You can't kill other people's processes. In particular, you can't kill process one. It's owned by root unless, of course, your root itself. The super-use who can kill anything. Other questions about these commands?
+
+There are other commands that are about running programs that aren't so much like this. They're meant for use by developers who are running these programs and want to find out stuff about the run. One of the simplest such commands is the time command. You can say time and then do anything you like like sort, etc.
+
+or a password or something. Put anything you like here. What the time command does is it runs the command that you specified and at the end it says, oh, here's how much CPU time you used, here's how much real time we used, and here's how much system time we used, right? So it reports real, user, and system time.
+
+Realtime is the time on the clock, right? You could have figured that out yourself just by pulling out a watch and looking at it. Usertime is how much CPU time is used by the code in your program, right? So if you've got a CPU intensive program, maybe it's multithreaded. The usertime can be greater than the real time if you've got a multithreaded application because you chewed up a lot of CPU time and a lot of threads running in parallel.
+
+For the applications that you're doing in this class though, this will typically be a little bit less than this. The system time is time executed in the kernel probably on your behalf. So it's not time that's in your program, it's time inside the operating system. Okay, and typically you have these two times together, you'll get something that's a little bit less than the real time if the system's idle. This gives you some feeling for how efficient your program is.
+
+you know to a first approximation. Alright, next thing that you can run, this one I use all the time, is a program called strace. So you can say strace sort, etc. passwords, let's say. This arranges to run the sort command, except every time the sort command issues a system call, and by system call,
+
+I mean, here's your program, right? It's running atop the kernel. The kernel is running atop the hardware. Most of your program is executing instructions, ordinary instructions, but occasionally it will do a system call when it's doing something heavyweight like opening a file or reading data from a file or starting up a subprocess, all those important things where you
+
+you need to ask the kernels permission to do those things. What strace does is it outputs a single line every time your program does a kernel call. Right? So in some sense you can think of strace as being a trace of every cross of this boundary. It won't tell you when your program is doing ordinary stuff even though most of your program's instructions are in this space here. You're mostly doing adds and subtracts and loads and stores
+
+and all that sort of thing. But when your program does a system call, S-Trace will output a line to tell you what that system call is. I find this very helpful. It's like being able to look at the program and figure out not so much what it's thinking, because it's thinking is the ordinary instructions, but it's almost like being able to put a tap at the base of your brain.
+
+and find every sort of signal that's going from your brain down to your spinal code because that's how things actually happen, right? All right. There is another command called Ltrace which is similar except instead of looking at the system call boundary, you can use this to find any library code that you're running. For example, the C library, there's an interface to that and Ltrace could tell you where the C library calls
+
+will be. If you have other libraries, you can use Ltrace to trace them as well. So in effect, these are sort of taps into your program that will let you automatically find out what your program is doing. Oftentimes, I find this way of figuring out why my code isn't working to be more efficient than running a debugger. In some sense, you can think of straces
+
+as being the dumbest, simplest debugger at all. It's a debugger that says, "Every time you do a system call, print it out," and then keep going. Right? That's a really dumb debugger. But oftentimes, it's the only debugger you need. It's like having the system automatically put in print statements before the program does anything important, which is a very handy facility to have. Okay? Any questions about S-Trace?
+
+Next one is Valgrind. Again, you can run this on any command. What Valgrind does is something that is lower level and sort of more mysterious, harder to explain, but in many cases more interesting. What it does is it
+
+takes over sort and each time sorts wants to think for a bit, that is execute some machine instructions, Valgrind looks at those instructions and says, "Do these look any good?" And if they look really innocuous like, "Eh, they're just doing some addition and multiplication and that lets the thing," Valgrind says, "Great!" And it lets the program execute, you know, the next 20 instructions because Valgrind has looked at all those 20 instructions and knows they're going to work and just kaboom.
+
+Done. But when it sees an instruction that it's not so sure about, for example, suppose it sees that sort wants to execute this instruction.
+
+UCS33 types know what this instruction means. For the rest of you, what's happening here is we are taking the contents of RBX, we're adding to that eight times the contents of RSI, we're adding three to the result, we're using that as the machine address of a four-byte word and copying it to EAX. That instruction is trouble, right, because there's a lot that can go wrong with it. Those registers could be out of range, it could be an invalid memory reference. So what Valgrind does,
+
+with this instruction is it takes a look at these registers and figures out whether or not they're actually plausible and in range for memory. Okay? And it does so at with more care than the hardware will do. All the hardware cares is it computes the address of the resulting word and if it's good, fine. The algorithm makes sure that each one of these guys is in the proper range, not that the result is in range. So it does finer grained memory checking than the hardware will do.
+
+And thus, when you run your program on Valgrind, there's a greater chance that your program will stop working. And that's what you want. You want your program to stop working when it's playing memory game shenanigans that happen to luck out now but won't luck out later. Right? So in effect, what Valgrind does is it tries to find subscript errors and bad pointers in your program in a pickier way than the hardware will.
+
+a very helpful approach in my opinion. Downside of Valgrind is because it has to look at the instructions as they're being executed, it's a lot slower. Valgrind will slow down your app by a factor of 10 or some big number like that. The advantage of Valgrind though is that you're going to catch mistakes that you wouldn't easily catch otherwise. Next time we will talk about the biggest gorilla in this zoo.
+
