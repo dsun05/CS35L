@@ -1,0 +1,421 @@
+Model choice: ChatGPT 4.1 in Cursor Agent.
+Prompts:
+1. 
+You are tasked with writing a set of statistical sanity checks for a C program named randall, which generates random bytes to standard output. The goal is to ensure that the output is not trivially predictable, is sufficiently diverse, and does not exhibit gross non-randomness.
+Requirements:
+Add these checks to the check target in the project's Makefile.
+The tests should use only standard POSIX command-line utilities (e.g., od, awk, sort, uniq, wc, tr, grep, etc.).
+The tests should:
+Verify that the output is not a constant value (i.e., at least two unique byte values).
+Ensure no single byte value dominates the output (e.g., no value appears in more than 50% of the output).
+Require a minimum diversity of byte values (e.g., at least 11 unique values).
+Tighten the dominance check (e.g., no value appears in more than 20% of the output).
+Check that there are no long runs of identical bytes (e.g., no run longer than 32).
+Perform a basic chi-squared test for uniformity across all 256 possible byte values.
+Each test should print a clear error message and exit with a nonzero status if it fails.
+If all tests pass, print a success message.
+Assumptions:
+The randall executable is present in the current directory.
+The Makefile target should be self-contained and not rely on any external scripts.
+Output Format:
+Provide the complete Makefile commands for the check target that implement these statistical tests.
+
+2. Following the style and comprehensiveness of these unit tests, generate a comprehensive set of unit tests to be appended to the check target within the project's Makefile. These tests should cover obvious cases, fringe cases, and error handling.
+
+3. Are there any test cases missing?
+
+4. Yes.
+
+Raw model outputs
+1.
+
+Here is a set of Makefile commands for the `check` target that perform statistical and distributional sanity checks on the output of `./randall`. These tests ensure that the random output is not trivially predictable, is sufficiently diverse, and does not exhibit gross non-randomness. The tests are designed to be run directly from the Makefile using standard POSIX utilities.
+
+```makefile
+check:
+	@echo "[RNG Test] Verifying statistical properties of randall output..."
+	@./randall 10000 > randall_check_bytes
+	# Test 1: Ensure at least two unique byte values
+	@uniq_count=`od -An -t u1 randall_check_bytes | tr -s ' ' '\n' | grep -v '^$$' | sort -nu | wc -l`; \
+	if [ "$$uniq_count" -le 1 ]; then \
+		echo "[ERROR] Random output contains only one unique byte. Fails diversity requirement."; \
+		rm -f randall_check_bytes; \
+		exit 1; \
+	fi
+	# Test 2: No byte value should dominate (>50%% of output)
+	@max_count=`od -An -t u1 randall_check_bytes | tr -s ' ' '\n' | grep -v '^$$' | sort -n | uniq -c | awk '{print $$1}' | sort -nr | head -1`; \
+	if [ "$$max_count" -gt 5000 ]; then \
+		echo "[ERROR] A single byte value appears $$max_count times, exceeding 50%% threshold."; \
+		rm -f randall_check_bytes; \
+		exit 1; \
+	fi
+	# Test 3: Require more than 10 unique byte values
+	@uniq_count2=`od -An -t u1 randall_check_bytes | tr -s ' ' '\n' | grep -v '^$$' | sort -nu | wc -l`; \
+	if [ "$$uniq_count2" -le 10 ]; then \
+		echo "[ERROR] Only $$uniq_count2 unique byte values found. Minimum required is 11."; \
+		rm -f randall_check_bytes; \
+		exit 1; \
+	fi
+	# Test 4: No byte value should occur more than 20%% of the time
+	@max_count2=`od -An -t u1 randall_check_bytes | tr -s ' ' '\n' | grep -v '^$$' | sort -n | uniq -c | awk '{print $$1}' | sort -nr | head -1`; \
+	if [ "$$max_count2" -gt 2000 ]; then \
+		echo "[ERROR] A byte value occurs $$max_count2 times, exceeding 20%% threshold."; \
+		rm -f randall_check_bytes; \
+		exit 1; \
+	fi
+	# Test 5: No run of identical bytes longer than 32
+	@od -An -t u1 randall_check_bytes | tr -s ' ' '\n' | grep -v '^$$' > randall_check_bytes.tmp; \
+	max_run=0; run=0; prev=""; \
+	while read b; do \
+	  if [ "$$b" = "$$prev" ]; then run=`expr $$run + 1`; else if [ $$run -gt $$max_run ]; then max_run=$$run; fi; run=1; prev=$$b; fi; \
+	done < randall_check_bytes.tmp; \
+	if [ $$run -gt $$max_run ]; then max_run=$$run; fi; \
+	if [ $$max_run -gt 32 ]; then \
+		echo "[ERROR] Detected a run of $$max_run identical bytes. Maximum allowed is 32."; \
+		rm -f randall_check_bytes randall_check_bytes.tmp; \
+		exit 1; \
+	fi; \
+	rm -f randall_check_bytes.tmp
+	# Test 6: Chi-squared test for uniformity
+	@od -An -t u1 randall_check_bytes | tr -s ' ' '\n' | grep -v '^$$' > randall_check_bytes.tmp; \
+	awk 'BEGIN{for(i=0;i<256;i++)count[i]=0;total=0} {count[$$1]++;total++} END{expected=total/256;chi2=0;for(i=0;i<256;i++)chi2+=((count[i]-expected)^2)/expected;if(chi2>320){print "[ERROR] Chi-squared statistic too high:",chi2;exit 1}}' randall_check_bytes.tmp || (rm -f randall_check_bytes randall_check_bytes.tmp && exit 1); \
+	rm -f randall_check_bytes.tmp
+	@rm -f randall_check_bytes
+	@echo "[SUCCESS] All statistical checks passed. Output distribution is within expected parameters."
+```
+
+**Explanation of the tests:**
+- **Test 1:** Ensures the output is not a constant byte value.
+- **Test 2:** Checks that no single byte value dominates the output.
+- **Test 3:** Ensures a minimum diversity of byte values.
+- **Test 4:** Tightens the dominance check to 20% for any single byte.
+- **Test 5:** Ensures there are no long runs of identical bytes.
+- **Test 6:** Performs a basic chi-squared test for uniformity across all 256 possible byte values.
+
+These tests provide a practical, Makefile-embeddable sanity check for "gross non-randomness" in the output of `./randall`.
+
+2. ```makefile
+
+	# --- Additional Unit Tests ---
+	@echo "[UNIT] Testing output length for various NBYTES values..."
+	@for n in 0 1 20 100 10000; do \
+	  ./randall $$n > randall_test_out; \
+	  actual=`wc -c < randall_test_out`; \
+	  if [ "$$actual" -ne "$$n" ]; then \
+	    echo "[ERROR] Output length for NBYTES=$$n is $$actual, expected $$n."; \
+	    rm -f randall_test_out; exit 1; \
+	  fi; \
+	  rm -f randall_test_out; \
+	  echo "[PASS] Output length correct for NBYTES=$$n."; \
+	done
+
+	@echo "[UNIT] Testing all input modes..."
+	@for mode in '' '-i mrand48_r' '-i /dev/urandom'; do \
+	  ./randall $$mode 100 > randall_test_inmode 2>randall_test_inmode.err; \
+	  if [ $? -ne 0 ]; then \
+	    if [ "$$mode" = "-i /dev/urandom" ] && ! [ -r /dev/urandom ]; then \
+	      echo "[SKIP] /dev/urandom not available."; \
+	    else \
+	      echo "[ERROR] Input mode '$$mode' failed."; cat randall_test_inmode.err; rm -f randall_test_inmode*; exit 1; \
+	    fi; \
+	  else \
+	    actual=`wc -c < randall_test_inmode`; \
+	    if [ "$$actual" -ne 100 ]; then \
+	      echo "[ERROR] Input mode '$$mode' produced $$actual bytes, expected 100."; rm -f randall_test_inmode*; exit 1; \
+	    fi; \
+	    echo "[PASS] Input mode '$$mode' produced correct output length."; \
+	  fi; \
+	  rm -f randall_test_inmode*; \
+	done
+
+	@echo "[UNIT] Testing all output modes..."
+	@for omode in '' '-o stdio' '-o 1' '-o 512' '-o 10000'; do \
+	  ./randall $$omode 1000 > randall_test_omode 2>randall_test_omode.err; \
+	  if [ $? -ne 0 ]; then \
+	    echo "[ERROR] Output mode '$$omode' failed."; cat randall_test_omode.err; rm -f randall_test_omode*; exit 1; \
+	  fi; \
+	  actual=`wc -c < randall_test_omode`; \
+	  if [ "$$actual" -ne 1000 ]; then \
+	    echo "[ERROR] Output mode '$$omode' produced $$actual bytes, expected 1000."; rm -f randall_test_omode*; exit 1; \
+	  fi; \
+	  echo "[PASS] Output mode '$$omode' produced correct output length."; \
+	  rm -f randall_test_omode*; \
+	done
+
+	@echo "[UNIT] Testing error handling for invalid arguments..."
+	@for args in '-1' 'abc' '-i invalidsrc 10' '-o invalidout 10' '' '10 20'; do \
+	  ./randall $$args >randall_test_err 2>&1; \
+	  if [ $? -eq 0 ]; then \
+	    echo "[ERROR] Invalid argument '$$args' did not cause failure."; rm -f randall_test_err; exit 1; \
+	  fi; \
+	  echo "[PASS] Invalid argument '$$args' correctly caused failure."; \
+	  rm -f randall_test_err; \
+	done
+
+	@echo "[UNIT] Testing error handling for unreadable file input..."
+	@touch randall_unreadable; chmod 000 randall_unreadable; \
+	./randall -i randall_unreadable 10 >randall_test_unreadable 2>&1; \
+	if [ $? -eq 0 ]; then \
+	  echo "[ERROR] Unreadable file did not cause failure."; chmod 644 randall_unreadable; rm -f randall_unreadable randall_test_unreadable; exit 1; \
+	fi; \
+	echo "[PASS] Unreadable file correctly caused failure."; chmod 644 randall_unreadable; rm -f randall_unreadable randall_test_unreadable
+
+	@echo "[UNIT] Testing output is not all zeros or all 0xFF..."
+	@./randall 1000 > randall_test_pattern; \
+	zeros=`hexdump -v -e '1/1 "%02X\n"' randall_test_pattern | grep -c '^00$$'`; \
+	ff=`hexdump -v -e '1/1 "%02X\n"' randall_test_pattern | grep -c '^FF$$'`; \
+	if [ "$$zeros" -eq 1000 ] || [ "$$ff" -eq 1000 ]; then \
+	  echo "[ERROR] Output is all zeros or all 0xFF."; rm -f randall_test_pattern; exit 1; \
+	fi; \
+	echo "[PASS] Output is not all zeros or all 0xFF."; rm -f randall_test_pattern
+
+	@echo "[UNIT] Testing two consecutive runs produce different output..."
+	@./randall 1000 > randall_test_run1; ./randall 1000 > randall_test_run2; \
+	if cmp -s randall_test_run1 randall_test_run2; then \
+	  echo "[ERROR] Two consecutive runs produced identical output."; rm -f randall_test_run1 randall_test_run2; exit 1; \
+	fi; \
+	echo "[PASS] Two consecutive runs produced different output."; rm -f randall_test_run1 randall_test_run2
+
+```
+
+Here is a comprehensive set of additional unit tests, appended to your `check` target in the Makefile, following the same formal and robust style as your statistical tests. These new tests cover:
+
+- **Output length correctness** for a variety of NBYTES values (including 0 and large values).
+- **All input modes**: default, `-i mrand48_r`, and `-i /dev/urandom`
+- **All output modes**: default, `-o stdio`, `-o 1`, `-o 512`, `-o 10000`.
+- **Error handling**: negative, non-integer, invalid input/output options, missing/extra arguments, unreadable file.
+- **Pattern checks**: output is not all zeros or all 0xFF.
+- **Randomness check**: two consecutive runs produce different output.
+
+Each test prints a clear `[PASS]` or `[ERROR]` message, and the script will exit on the first failure. All temporary files are cleaned up after each test. This suite ensures your program is robust, correct, and handles edge cases and errors gracefully.
+
+If you need even more edge cases or want to test specific behaviors, let me know!
+
+3. Your current Makefile `check` target and appended unit tests are **very comprehensive** and cover the vast majority of practical, edge, and error cases for a command-line random byte generator. Here's a breakdown of what you have and a few possible (but not strictly necessary) additions for even more thoroughness:
+
+---
+
+### **What is already covered:**
+
+#### **Statistical/Randomness Checks**
+- At least two unique byte values
+- No single byte dominates (>50%)
+- Minimum diversity (at least 11 unique values)
+- No byte occurs >20%
+- No long runs of identical bytes (>32)
+- Chi-squared test for uniformity
+
+#### **Functional/Correctness Checks**
+- Output length for NBYTES = 0, 1, 20, 100, 10000
+- All input modes: default, `-i mrand48_r`, `-i /dev/urandom`
+- All output modes: default, `-o stdio`, `-o 1`, `-o 512`, `-o 10000`
+- Output is not all zeros or all 0xFF
+- Two consecutive runs produce different output
+
+#### **Error Handling**
+- Negative NBYTES
+- Non-integer NBYTES
+- Invalid input source
+- Invalid output mode
+- Missing arguments
+- Too many arguments
+- Unreadable file for `-i`
+
+---
+
+### **Potential Additional Test Cases**
+
+These are not strictly required, but could be added for **maximum** coverage or to catch rare edge cases:
+
+1. **Test for file output redirection**
+   - Ensure that `./randall 100 > somefile` produces a file of exactly 100 bytes.
+
+2. **Test for very large NBYTES (e.g., 1,000,000)**
+   - To check for memory leaks or performance issues (may be slow in autograder).
+
+3. **Test for zero-length file as input**
+   - `touch emptyfile; ./randall -i emptyfile 8` should fail or abort.
+
+4. **Test for output to a pipe**
+   - `./randall 100 | wc -c` should print 100.
+
+5. **Test for output to a closed pipe**
+   - `./randall 1000000 | head -c 10 > /dev/null` should not crash or hang.
+
+6. **Test for permission errors on stdout**
+   - Try `./randall 10 > /root/forbiddenfile` (may not be possible in autograder).
+
+7. **Test for help/usage message**
+   - `./randall --help` or `./randall -h` (if implemented) should print usage.
+
+8. **Test for input file with insufficient data**
+   - Create a file with only 4 bytes, then run `./randall -i thatfile 8` (should fail).
+
+9. **Test for output with block size larger than NBYTES**
+   - `./randall -o 1000 10` (should still output 10 bytes).
+
+10. **Test for output with block size exactly equal to NBYTES**
+    - `./randall -o 100 100`
+
+11. **Test for output with block size of 1**
+    - `./randall -o 1 10`
+
+12. **Test for output with block size not a number**
+    - `./randall -o notanumber 10` (should fail)
+
+13. **Test for input file that is a directory**
+    - `mkdir testdir; ./randall -i testdir 10` (should fail)
+
+---
+
+### **Summary**
+
+- **Your current tests are already excellent and would pass any reasonable grading rubric.**
+- The above are "bonus" edge cases for extreme robustness or if you want to go above and beyond.
+- If you want to add any of these, let me know which ones and I can provide the Makefile code for them.
+
+**Let me know if you want to add any of these or need further advice!**
+
+4. ```makefile
+
+	@echo "[UNIT] Testing file output redirection..."
+	@./randall 100 > randall_test_fileout; \
+	actual=`wc -c < randall_test_fileout`; \
+	if [ "$$actual" -ne 100 ]; then \
+	  echo "[ERROR] File output redirection produced $$actual bytes, expected 100."; rm -f randall_test_fileout; exit 1; \
+	fi; \
+	echo "[PASS] File output redirection produced correct output length."; rm -f randall_test_fileout
+
+	@echo "[UNIT] Testing very large NBYTES (1,000,000)..."
+	@./randall 1000000 > randall_test_large; \
+	actual=`wc -c < randall_test_large`; \
+	if [ "$$actual" -ne 1000000 ]; then \
+	  echo "[ERROR] Large NBYTES produced $$actual bytes, expected 1000000."; rm -f randall_test_large; exit 1; \
+	fi; \
+	echo "[PASS] Large NBYTES produced correct output length."; rm -f randall_test_large
+
+	@echo "[UNIT] Testing zero-length file as input..."
+	@touch randall_emptyfile; \
+	./randall -i randall_emptyfile 8 >randall_test_emptyin 2>&1; \
+	if [ $? -eq 0 ]; then \
+	  echo "[ERROR] Zero-length input file did not cause failure."; rm -f randall_emptyfile randall_test_emptyin; exit 1; \
+	fi; \
+	echo "[PASS] Zero-length input file correctly caused failure."; rm -f randall_emptyfile randall_test_emptyin
+
+	@echo "[UNIT] Testing output to a pipe..."
+	@count=`./randall 100 | wc -c`; \
+	if [ "$$count" -ne 100 ]; then \
+	  echo "[ERROR] Output to pipe produced $$count bytes, expected 100."; exit 1; \
+	fi; \
+	echo "[PASS] Output to pipe produced correct output length."
+
+	@echo "[UNIT] Testing output to a closed pipe..."
+	@./randall 1000000 | head -c 10 > /dev/null; \
+	if [ $? -ne 0 ]; then \
+	  echo "[ERROR] Output to closed pipe caused error."; exit 1; \
+	fi; \
+	echo "[PASS] Output to closed pipe did not crash or hang."
+
+	@echo "[UNIT] Testing permission error on stdout..."
+	@touch randall_forbidden; chmod 000 randall_forbidden; \
+	./randall 10 > randall_forbidden 2>randall_test_forbidden.err; \
+	if [ $? -eq 0 ]; then \
+	  echo "[SKIP] Permission error test skipped (may be running as root or on a permissive FS)."; chmod 644 randall_forbidden; rm -f randall_forbidden randall_test_forbidden.err; \
+	else \
+	  echo "[PASS] Permission error on stdout correctly caused failure."; chmod 644 randall_forbidden; rm -f randall_forbidden randall_test_forbidden.err; \
+	fi
+
+	@echo "[UNIT] Testing help/usage message..."
+	@./randall --help > randall_test_help 2>&1; \
+	if grep -qi usage randall_test_help; then \
+	  echo "[PASS] --help prints usage message."; \
+	else \
+	  echo "[SKIP] --help not implemented or does not print usage."; \
+	fi; rm -f randall_test_help
+	@./randall -h > randall_test_helph 2>&1; \
+	if grep -qi usage randall_test_helph; then \
+	  echo "[PASS] -h prints usage message."; \
+	else \
+	  echo "[SKIP] -h not implemented or does not print usage."; \
+	fi; rm -f randall_test_helph
+
+	@echo "[UNIT] Testing input file with insufficient data..."
+	@echo -n -e '\x01\x02\x03\x04' > randall_shortfile; \
+	./randall -i randall_shortfile 8 >randall_test_shortin 2>&1; \
+	if [ $? -eq 0 ]; then \
+	  echo "[ERROR] Input file with insufficient data did not cause failure."; rm -f randall_shortfile randall_test_shortin; exit 1; \
+	fi; \
+	echo "[PASS] Input file with insufficient data correctly caused failure."; rm -f randall_shortfile randall_test_shortin
+
+	@echo "[UNIT] Testing output with block size larger than NBYTES..."
+	@./randall -o 1000 10 > randall_test_blocklarge; \
+	actual=`wc -c < randall_test_blocklarge`; \
+	if [ "$$actual" -ne 10 ]; then \
+	  echo "[ERROR] Block size larger than NBYTES produced $$actual bytes, expected 10."; rm -f randall_test_blocklarge; exit 1; \
+	fi; \
+	echo "[PASS] Block size larger than NBYTES produced correct output length."; rm -f randall_test_blocklarge
+
+	@echo "[UNIT] Testing output with block size exactly equal to NBYTES..."
+	@./randall -o 100 100 > randall_test_blockexact; \
+	actual=`wc -c < randall_test_blockexact`; \
+	if [ "$$actual" -ne 100 ]; then \
+	  echo "[ERROR] Block size equal to NBYTES produced $$actual bytes, expected 100."; rm -f randall_test_blockexact; exit 1; \
+	fi; \
+	echo "[PASS] Block size equal to NBYTES produced correct output length."; rm -f randall_test_blockexact
+
+	@echo "[UNIT] Testing output with block size of 1..."
+	@./randall -o 1 10 > randall_test_block1; \
+	actual=`wc -c < randall_test_block1`; \
+	if [ "$$actual" -ne 10 ]; then \
+	  echo "[ERROR] Block size 1 produced $$actual bytes, expected 10."; rm -f randall_test_block1; exit 1; \
+	fi; \
+	echo "[PASS] Block size 1 produced correct output length."; rm -f randall_test_block1
+
+	@echo "[UNIT] Testing output with block size not a number..."
+	@./randall -o notanumber 10 >randall_test_blocknan 2>&1; \
+	if [ $? -eq 0 ]; then \
+	  echo "[ERROR] Block size not a number did not cause failure."; rm -f randall_test_blocknan; exit 1; \
+	fi; \
+	echo "[PASS] Block size not a number correctly caused failure."; rm -f randall_test_blocknan
+
+	@echo "[UNIT] Testing input file that is a directory..."
+	@mkdir randall_testdir; \
+	./randall -i randall_testdir 10 >randall_test_dirin 2>&1; \
+	if [ $? -eq 0 ]; then \
+	  echo "[ERROR] Input file that is a directory did not cause failure."; rm -rf randall_testdir randall_test_dirin; exit 1; \
+	fi; \
+	echo "[PASS] Input file that is a directory correctly caused failure."; rm -rf randall_testdir randall_test_dirin
+
+```
+
+All the additional edge and fringe test cases have now been appended to your Makefile's `check` target. These new tests cover:
+
+- File output redirection
+- Very large NBYTES
+- Zero-length file as input
+- Output to a pipe and to a closed pipe
+- Permission errors on stdout
+- Help/usage message checks
+- Input file with insufficient data
+- Block size edge cases (larger than NBYTES, equal to NBYTES, block size 1, block size not a number)
+- Input file that is a directory
+
+Each test prints a clear `[PASS]`, `[ERROR]`, or `[SKIP]` message, and cleans up all temporary files. This makes your test suite extremely robust and comprehensive, covering nearly every reasonable and unreasonable usage scenario for your program.
+
+If you want to further tune or organize the output, or add even more exotic cases, let me know!
+
+
+Evaluation and brief explanation of generation quality:
+
+Getting these test cases from language models was much harder than I expected. I tried several different LLMs, and each one gave me different kinds of answers. Gemini was obsessed with making helper .sh or .c files, and it was very difficult to get it to contain itself to the Makefile, even when I clearly specified it. It's generated test units also did not run right away. There were constant syntax errors, like using spaces instead of tabs in Makefiles, quoting mistakes, or using commands that aren't available everywhere, which would fail in the autograder. I spent a lot of time fixing these issues by hand, making sure the scripts actually ran and cleaned up after themselves. In the end, I could never get Gemini to properly write test cases, and no matter what I tried for it to give me a statistical significance test, it never passed the autograder even though everything looked fine on my end. 
+
+Claude was even worse than Gemini in some ways, it entirely refused to be self contained within the Makefile. All my prompt would cause it to output either several .c helper files, or a .c function inside the Makefile. I quickly decided that this was not the way to go. Besides all this, its code did run properly and without needing much adjusting or correction (not many crashes or errors), but still did not pass the autograder. 
+
+After I switched to ChatGPT, things went more smoothly. It took a long time for me to get the prompting perfect, but right away the results were better than Gemini and Claude (which is suprising, given their rankings for code applications, which was the whole reason I started off with Gemini and Claude instead of ChatGPT). I noticed that GPT would easily give me many unit tests for basic cases that would run without any issues, except for some special cases. Often, the expected output it had in its unit tests were not in line with what my implemention of randall actually outputs (especially during errors), so I had to ask it to reflect and compare the Makefile and Applicaiton several times. This process was very iterative. I would revert to a clean, final version of my code (nothing in makefile check) and experiment with prompting, then revert and try again. Each time, I would add more details to my prompts based on what it was missing. Eventually, I got the prompts listed above, which gave me the output that worked the best and I ended up keeping. 
+
+The comprehensiveness of the test cases impressed me. It covered not just the obvious cases, but also fringe and error scenarios, and even some that I had not thought of myself. For example, it suggested tests for output to pipes, permission errors, and block size edge cases, which I never would've thought of myself (at least without significantly more time, and more thinking than a single prompt). 
+
+
+I definitely had to refine the LLM-generated test cases. In fact, almost every test needed some kind of manual adjustment—sometimes just a small fix, sometimes a complete rewrite. The process was very iterative: generate, test, debug, and repeat.
+
+Overall, after all the effort, the test suite gives a lot of confidence that the program is behaving as it should. For example, if I break the random output so it’s always the same byte, the statistical tests will catch it. If I make the program fail to handle an unreadable file, the error handling tests will flag it. The tests also catch subtle bugs, like producing the wrong number of bytes or not handling command-line arguments correctly. 
